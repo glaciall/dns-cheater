@@ -2,6 +2,7 @@ package cn.org.hentai.dns.app;
 
 import cn.org.hentai.dns.util.BeanUtils;
 import cn.org.hentai.dns.util.Configs;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -20,6 +21,7 @@ import javax.sql.DataSource;
 @ComponentScan(value = {"cn.org.hentai"})
 @EnableAutoConfiguration
 @SpringBootApplication
+@MapperScan("cn.org.hentai.dns")
 public class DNSCheaterApp
 {
     @Autowired
@@ -30,13 +32,5 @@ public class DNSCheaterApp
         ApplicationContext context = SpringApplication.run(DNSCheaterApp.class, args);
         BeanUtils.init(context);
         Configs.init("/application.properties");
-    }
-
-    @Bean
-    public DataSource dataSource()
-    {
-        SQLiteDataSource dataSource = new SQLiteDataSource();
-        dataSource.setUrl(env.getProperty("spring.datasource.url"));
-        return dataSource;
     }
 }
