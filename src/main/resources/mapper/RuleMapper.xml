@@ -11,6 +11,7 @@
     <result column="name" jdbcType="VARCHAR" property="name" />
     <result column="priority" jdbcType="INTEGER" property="priority" />
     <result column="enabled" jdbcType="BIT" property="enabled" />
+    <result column="dispatchMode" jdbcType="VARCHAR" property="dispatchMode" />
   </resultMap>
   <sql id="Example_Where_Clause">
     <where>
@@ -71,7 +72,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    id, ipFrom, ipTo, timeFrom, timeTo, matchMode, `name`, priority, enabled
+    id, ipFrom, ipTo, timeFrom, timeTo, matchMode, `name`, priority, enabled, dispatchMode
   </sql>
   <select id="selectByExample" parameterType="cn.org.hentai.dns.entity.RuleExample" resultMap="BaseResultMap">
     select
@@ -114,11 +115,11 @@
   <insert id="insert" parameterType="cn.org.hentai.dns.entity.Rule" useGeneratedKeys="true" keyProperty="id">
     insert into `rule` (id, ipFrom, ipTo, 
       timeFrom, timeTo, matchMode,
-      `name`, priority, enabled
+      `name`, priority, enabled, dispatchMode
       )
     values (#{id,jdbcType=BIGINT}, #{ipFrom,jdbcType=BIGINT}, #{ipTo,jdbcType=BIGINT}, 
       #{timeFrom,jdbcType=INTEGER}, #{timeTo,jdbcType=INTEGER}, #{matchMode,jdbcType=VARCHAR},
-      #{name,jdbcType=VARCHAR}, #{priority,jdbcType=INTEGER}, #{enabled,jdbcType=BIT}
+      #{name,jdbcType=VARCHAR}, #{priority,jdbcType=INTEGER}, #{enabled,jdbcType=BIT}, #{dispatchMode,jdbcType=VARCHAR}
       )
   </insert>
   <insert id="insertSelective" parameterType="cn.org.hentai.dns.entity.Rule" useGeneratedKeys="true" keyProperty="id">
@@ -151,6 +152,9 @@
       <if test="enabled != null">
         enabled,
       </if>
+      <if test="dispatchMode != null">
+        dispatchMode,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
       <if test="id != null">
@@ -179,6 +183,9 @@
       </if>
       <if test="enabled != null">
         #{enabled,jdbcType=BIT},
+      </if>
+      <if test="dispatchMode != null">
+        #{dispatchMode,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -218,6 +225,9 @@
       <if test="record.enabled != null">
         enabled = #{record.enabled,jdbcType=BIT},
       </if>
+      <if test="record.dispatchMode != null">
+        dispatchMode = #{record.dispatchMode,jdbcType=VARCHAR},
+      </if>
     </set>
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
@@ -233,7 +243,8 @@
       matchMode = #{record.matchMode,jdbcType=VARCHAR},
       `name` = #{record.name,jdbcType=VARCHAR},
       priority = #{record.priority,jdbcType=INTEGER},
-      enabled = #{record.enabled,jdbcType=BIT}
+      enabled = #{record.enabled,jdbcType=BIT},
+      dispatchMode = #{record.dispatchMode,jdbcType=VARCHAR},
     <if test="_parameter != null">
       <include refid="Update_By_Example_Where_Clause" />
     </if>
@@ -265,6 +276,9 @@
       <if test="enabled != null">
         enabled = #{enabled,jdbcType=BIT},
       </if>
+      <if test="dispatchMode != null">
+        dispatchMode = #{dispatchMode,jdbcType=VARCHAR},
+      </if>
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
@@ -277,7 +291,8 @@
       matchMode = #{matchMode,jdbcType=VARCHAR},
       `name` = #{name,jdbcType=VARCHAR},
       priority = #{priority,jdbcType=INTEGER},
-      enabled = #{enabled,jdbcType=BIT}
+      enabled = #{enabled,jdbcType=BIT},
+      dispatchMode = #{dispatchMode,jdbcType=VARCHAR},
     where id = #{id,jdbcType=BIGINT}
   </update>
   <insert id="batchInsert" parameterType="map">
@@ -287,12 +302,12 @@
       @project https://github.com/itfsw/mybatis-generator-plugin
     -->
     insert into `rule`
-    (id, ipFrom, ipTo, timeFrom, timeTo, matchMode, `name`, priority, enabled)
+    (id, ipFrom, ipTo, timeFrom, timeTo, matchMode, `name`, priority, enabled, dispatchMode)
     values
     <foreach collection="list" item="item" separator=",">
       (#{item.id,jdbcType=BIGINT}, #{item.ipFrom,jdbcType=BIGINT}, #{item.ipTo,jdbcType=BIGINT}, 
         #{item.timeFrom,jdbcType=INTEGER}, #{item.timeTo,jdbcType=INTEGER}, #{item.matchMode,jdbcType=VARCHAR},
-        #{item.name,jdbcType=VARCHAR}, #{item.priority,jdbcType=INTEGER}, #{item.enabled,jdbcType=BIT}
+        #{item.name,jdbcType=VARCHAR}, #{item.priority,jdbcType=INTEGER}, #{item.enabled,jdbcType=BIT}, #{item.dispatchMode,jdbcType=VARCHAR}
         )
     </foreach>
   </insert>
@@ -337,6 +352,9 @@
         </if>
         <if test="'enabled'.toString() == column.value">
           #{item.enabled,jdbcType=BIT}
+        </if>
+        <if test="'dispatchMode'.toString() == column.value">
+          #{item.dispatchMode,jdbcType=VARCHAR}
         </if>
       </foreach>
       )
