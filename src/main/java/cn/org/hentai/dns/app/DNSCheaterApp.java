@@ -1,8 +1,12 @@
 package cn.org.hentai.dns.app;
 
+import cn.org.hentai.dns.dns.NameServer;
+import cn.org.hentai.dns.dns.RuleManager;
 import cn.org.hentai.dns.util.BeanUtils;
 import cn.org.hentai.dns.util.Configs;
 import org.mybatis.spring.annotation.MapperScan;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -24,6 +28,8 @@ import javax.sql.DataSource;
 @MapperScan("cn.org.hentai.dns")
 public class DNSCheaterApp
 {
+    static Logger logger = LoggerFactory.getLogger(DNSCheaterApp.class);
+
     @Autowired
     private Environment env;
 
@@ -32,5 +38,8 @@ public class DNSCheaterApp
         ApplicationContext context = SpringApplication.run(DNSCheaterApp.class, args);
         BeanUtils.init(context);
         Configs.init("/application.properties");
+
+        RuleManager.getInstance().init();
+        new NameServer().start();
     }
 }

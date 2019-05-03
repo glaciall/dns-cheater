@@ -82,7 +82,8 @@ public class NameServer extends Thread
                         byte[] message = new byte[buffer.limit()];
                         buffer.get(message, 0, message.length);
 
-                        logger.debug("received: from = {}, length = {}, ", addr.toString(), message.length);
+                        logger.info("##############################################################################################");
+                        logger.info("received: from = {}, length = {}, ", addr.toString(), message.length);
                         queries.put(new Request(addr, Packet.create(message)));
                         totalQueryCount.addAndGet(1);
                     }
@@ -96,7 +97,8 @@ public class NameServer extends Thread
                             buffer.put(response.packet);
                             buffer.flip();
                             datagramChannel.send(buffer, response.remoteAddress);
-                            logger.debug("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
+                            logger.info("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
+                            ByteUtils.dump(response.packet);
                         }
                     }
                 }

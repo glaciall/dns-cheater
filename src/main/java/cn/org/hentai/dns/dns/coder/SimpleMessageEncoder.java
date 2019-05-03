@@ -30,8 +30,8 @@ public final class SimpleMessageEncoder
 
         // Queries区域，这里只处理单域名查询的情况
         packet.addBytes(encodeName(question.name));
-        packet.addShort((short)question.type);              // 查询类型
-        packet.addShort((short)0x01);                       // 查询类，始终为01
+        packet.addByte((byte)0x00);
+        packet.addInt(0x00010001);                      // 查询类型、查询类固定为0x01
 
         // Resource Record列表
         for (int i = 0; i < answers.length; i++)
@@ -46,7 +46,7 @@ public final class SimpleMessageEncoder
             packet.addShort((short)answer.dlen);
             if (answer.type == TYPE_A)
             {
-                packet.addInt(answer.ipv4);
+                packet.addInt((int)(answer.ipv4 & 0xffffffff));
             }
             else if (answer.type == TYPE_AAAA)
             {

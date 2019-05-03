@@ -1,10 +1,18 @@
 package cn.org.hentai.dns.entity;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
-public class Rule implements Serializable {
+public class Rule implements Serializable
+{
+    static Logger logger = LoggerFactory.getLogger(Rule.class);
+
     private Long id;
     private Long ipFrom;
     private Long ipTo;
@@ -16,24 +24,65 @@ public class Rule implements Serializable {
     private Boolean enabled;
     private String dispatchMode;
 
+    private List<Address> addresses;
+    private int sequence = 0;
+    private Random random = new Random();
+
     private static final long serialVersionUID = 1L;
 
-    public boolean matches(int now, byte[] addr, String domainName)
+    private boolean error(String message)
+    {
+        logger.error(message);
+        return false;
+    }
+
+    public boolean matches(int now, long ip, String domainName)
     {
         // 时间段，07:34:11 -> 08:01:01
         // Inet4Address.getLoopbackAddress();
-        long ip = addr[0] << 24 | addr[1] << 16 | addr[2] << 8 | addr[3];
-        if (ipFrom != null && ip < ipFrom) return false;
-        if (ipTo != null && ip > ipTo) return false;
+        if (ipFrom != null && ip < ipFrom) return error("ip 开始段不符合");
+        if (ipTo != null && ip > ipTo) return error("ip 结束段不符合");
 
         // 时间
-        if (timeFrom != null && now < timeFrom) return false;
-        if (timeTo != null && now > timeTo) return false;
+        if (timeFrom != null && now < timeFrom) return error("时间开始段不符合");
+        if (timeTo != null && now > timeTo) return error("时间结束段不符合");
 
         // 域名匹配
         if ("prefix".equals(matchMode)) return domainName.startsWith(name);
         else if ("suffix".equals(matchMode)) return domainName.endsWith(name);
         else return domainName.indexOf(name) > -1;
+    }
+
+    // 根据设定的分发模式给出应答IP
+    public Address dispatchAddress(long ip)
+    {
+        if ("random".equals(dispatchMode))
+        {
+            // 随机
+            return this.addresses.get((random.nextInt() & 0x7fffffff) % this.addresses.size());
+        }
+        else if ("round-robin".equals(dispatchMode))
+        {
+            // 轮循
+            return this.addresses.get(((sequence++) & 0x7fffffff) % this.addresses.size());
+        }
+        else if ("iphash".equals(dispatchMode))
+        {
+            // IP Hash
+            return this.addresses.get((int)(ip % this.addresses.size()));
+        }
+        else return null;
+    }
+
+    public List<Address> getAddresses()
+    {
+        return addresses;
+    }
+
+    public Rule setAddresses(List<Address> addresses)
+    {
+        this.addresses = addresses;
+        return this;
     }
 
     public Long getId() {
