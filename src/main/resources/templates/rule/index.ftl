@@ -36,11 +36,11 @@
     </div>
 </div>
 <#include "../inc/footer.ftl">
-<script type="text/html" id="form-add">
+<script type="text/html" id="form-add-html">
     <div class="alert alert-info">
         请设置域名所指向的IP，设定将在保存后即刻生效，可使用<strong>nslookup</strong>进行查询验证。
     </div>
-    <form method="post" class="form-horizontal">
+    <form method="post" class="form-horizontal" id="form-add">
         <div class="row">
             <div class="col-md-8">
                 <div class="form-group">
@@ -67,8 +67,8 @@
                     <label class="col-md-3 control-label" for="text-input">匹配模式：</label>
                     <div class="col-md-9">
                         <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="prefix" /> 前缀匹配，如www.匹配www.sina.com.cn、www.163.com等</label></div>
-                        <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="prefix" /> 后缀匹配，如.baidu.com匹配www.baidu.com、tieba.baidu.com等</label></div>
-                        <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="prefix" checked /> 包含，只要解析的域名中包含指定的域名即可</label></div>
+                        <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="suffix" /> 后缀匹配，如.baidu.com匹配www.baidu.com、tieba.baidu.com等</label></div>
+                        <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="contains" checked /> 包含，只要解析的域名中包含指定的域名即可</label></div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -87,7 +87,7 @@
                 </div>
             </div>
             <div class="col-md-4">
-                <textarea rows="8" class="form-control" id="addresses" placeholder="请输入应答IP，一行一个地址"></textarea>
+                <textarea rows="8" class="form-control" name="addresses" id="addresses" placeholder="请输入应答IP，一行一个地址"></textarea>
             </div>
         </div>
     </form>
@@ -99,27 +99,16 @@
         {
             modal({
                 title : '添加新转发',
-                html : $('#form-add').html(),
+                html : $('#form-add-html').html(),
                 close : true,
                 ok : function(dialog)
                 {
-                    /*
-                    $.post('${context}/manage/port/save', {
-                        hostId : hostId,
-                        name : name,
-                        listenPort : listenPort,
-                        hostIp : hostIp,
-                        hostPort : hostPort,
-                        soTimeout : soTimeout,
-                        connectTimeout : connectTimeout,
-                        concurrentConnections : concurrentConnections
-                    }, function(result)
+                    $.post('${context}/manage/rule/create', $('#form-add').serialize(), function(result)
                     {
                         if (result.error.code != 0) return alert(result.error.reason);
                         $('.modal').modal('hide');
-                        $('#port-table').paginate('reload');
+                        $('#rule-table').paginate('reload');
                     });
-                    */
                     return false;
                 }
             });
@@ -195,7 +184,7 @@
                     {
                         var shtml = '';
                         shtml += '<label class="switch switch-primary">';
-                        shtml += '  <input type="checkbox" class="switch-input" ' + (v ? 'checked' : '') + '>';
+                        shtml += '  <input type="checkbox" x-rule-id="' + r.id + '" class="switch-input" ' + (v ? 'checked' : '') + '>';
                         shtml += '  <span class="switch-label" data-on="启用" data-off="停用"></span>';
                         shtml += '  <span class="switch-handle"></span>';
                         shtml += '</label>';
@@ -209,8 +198,8 @@
                     formatter : function(i, v, r)
                     {
                         var shtml = '';
-                        shtml += '<div class="btn-group" x-host-id="' + v + '">';
-                        shtml += '  <a href="javascript:enable(' + v + ');" class="btn btn-primary">修改</a>';
+                        shtml += '<div class="btn-group" x-rule-id="' + v + '">';
+                        shtml += '  <a href="javascript:edit(' + v + ');" class="btn btn-primary">修改</a>';
                         shtml += '  <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">';
                         shtml += '      <span class="caret"></span>';
                         shtml += '      <span class="sr-only">Toggle Dropdown</span>';
@@ -228,19 +217,38 @@
         $(document).on('click', '.dropdown-menu li a', function()
         {
             var action = $(this).attr('x-action');
-            var id = $(this).parents('.btn-group').attr('x-host-id');
+            var id = $(this).parents('.btn-group').attr('x-rule-id');
             if (window[action] && typeof(window[action]) == 'function') window[action](id);
+        });
+
+        $(document).on('change', '.switch-input', function()
+        {
+            var checkbox = $(this);
+            setEnabled(checkbox.attr('x-rule-id'), checkbox.is(':checked'));
         });
     });
 
-    function remove(id)
+    function setEnabled(ruleId, enabled)
     {
-        if (!confirm('真的要删掉此端口转发配置吗？')) return;
-        $.post('${context}/manage/port/remove', { portId : id }, function(result)
+        $.post('${context}/manage/rule/setEnable', { ruleId : ruleId, enabled : enabled }, function(result)
+        {
+            if (result.error && result.error.code) return alert(result.error.reason);
+        });
+    }
+
+    function edit(ruleId)
+    {
+
+    }
+
+    function remove(ruleId)
+    {
+        if (!confirm('真的要删除此域名解析规则吗？')) return;
+        $.post('${context}/manage/rule/remove', { ruleId : ruleId }, function(result)
         {
             if (result.error.code) alert(result.error.reason);
             else alert("操作成功");
-            $('#port-table').paginate('reload');
+            $('#rule-table').paginate('reload');
         });
     }
 

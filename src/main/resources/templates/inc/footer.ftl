@@ -344,3 +344,18 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
     });
 </script>
 <!-- end: JavaScript-->
+<script type="text/javascript">
+    $(document).ready(function()
+    {
+        $('.nav-sidebar li a').each(function()
+        {
+            var link = $(this);
+            var url = link.attr('href');
+            if (location.pathname.indexOf(url) > -1)
+            {
+                link.parent().addClass('active');
+                return false;
+            }
+        });
+    });
+</script>

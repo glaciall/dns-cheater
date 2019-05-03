@@ -292,7 +292,7 @@
       `name` = #{name,jdbcType=VARCHAR},
       priority = #{priority,jdbcType=INTEGER},
       enabled = #{enabled,jdbcType=BIT},
-      dispatchMode = #{dispatchMode,jdbcType=VARCHAR},
+      dispatchMode = #{dispatchMode,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
   <insert id="batchInsert" parameterType="map">

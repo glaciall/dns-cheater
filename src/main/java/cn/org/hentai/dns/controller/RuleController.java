@@ -63,7 +63,7 @@ public class RuleController extends BaseController
                              @RequestParam String matchMode,
                              @RequestParam String name,
                              @RequestParam String dispatchMode,
-                             @RequestParam String[] addr)
+                             @RequestParam String addresses)
     {
         Result result = new Result();
         try
@@ -97,6 +97,7 @@ public class RuleController extends BaseController
                 rule.setTimeFrom(null);
                 rule.setTimeTo(null);
             }
+            String[] addr = addresses.split("\r\n");
 
             if (StringUtils.isEmpty(matchMode)) matchMode = "contains";
             if (!matchMode.matches("^(suffix)|(prefix)|(contains)$")) throw new RuntimeException("请选择匹配模式");
@@ -113,8 +114,10 @@ public class RuleController extends BaseController
 
             ruleService.create(rule);
 
+            int addressCount = 0;
             for (int i = 0; i < addr.length; i++)
             {
+                if (StringUtils.isEmpty(addr[i])) continue;
                 if (addr[i].matches("^(\\d{1,3})(\\.\\d{1,3}){3}$") == false) throw new RuntimeException("请输入正确格式的IP应答地址");
 
                 Address item = new Address();
@@ -123,7 +126,9 @@ public class RuleController extends BaseController
                 item.setAddress(addr[i]);
 
                 addrService.create(item);
+                addressCount += 1;
             }
+            if (addressCount == 0) throw new RuntimeException("请至少输入一个IP应答地址");
 
             // TODO: 实时更新内存缓存中的规则列表
         }
@@ -138,4 +143,45 @@ public class RuleController extends BaseController
     // 修改解析规则，含增删IP条目
 
     // 禁用/启用解析规则
+    @RequestMapping("/setEnable")
+    @ResponseBody
+    public Result setEnable(@RequestParam Long ruleId, @RequestParam Boolean enabled)
+    {
+        Result result = new Result();
+        try
+        {
+            Rule rule = ruleService.getById(ruleId);
+            if (rule == null) throw new RuntimeException("查无此解析规则");
+
+            rule.setEnabled(enabled);
+            ruleService.update(rule);
+        }
+        catch(Exception ex)
+        {
+            result.setError(ex);
+        }
+        return result;
+    }
+
+    // 删除
+    @RequestMapping("/remove")
+    @ResponseBody
+    @Transactional
+    public Result remove(@RequestParam Long ruleId)
+    {
+        Result result = new Result();
+        try
+        {
+            Rule rule = ruleService.getById(ruleId);
+            if (null == rule) throw new RuntimeException("查无此解析规则");
+            ruleService.remove(rule);
+            addrService.removeByRule(rule);
+        }
+        catch(Exception ex)
+        {
+            result.setError(ex);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return result;
+    }
 }

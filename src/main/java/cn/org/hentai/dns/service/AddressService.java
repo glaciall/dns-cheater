@@ -34,13 +34,13 @@ public class AddressService
         return addrMapper.deleteByPrimaryKey(addr.getId());
     }
 
-    public int remove(Rule rule)
-    {
-        return addrMapper.deleteByExample(new AddressExample().createCriteria().andRuleIdEqualTo(rule.getId()).example());
-    }
-
     public List<Address> find(Long ruleId)
     {
         return addrMapper.selectByExample(new AddressExample().createCriteria().andRuleIdEqualTo(ruleId).example());
+    }
+
+    public int removeByRule(Rule rule)
+    {
+        return addrMapper.deleteByExample(new AddressExample().createCriteria().andRuleIdEqualTo(rule.getId()).example());
     }
 }
