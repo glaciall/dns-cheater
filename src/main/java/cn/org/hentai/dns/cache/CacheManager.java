@@ -8,22 +8,28 @@ import cn.org.hentai.dns.dns.entity.ResourceRecord;
  */
 public final class CacheManager
 {
-    LRU<String, ResourceRecord[]> cachePool = null;
+    LRU<String, CachedItem> cachePool = null;
 
     public ResourceRecord[] get(String key)
     {
-        return cachePool.get(key);
+        CachedItem item = cachePool.get(key);
+        if (item.expired())
+        {
+            cachePool.remove(key);
+            return null;
+        }
+        return (ResourceRecord[]) item.entity;
     }
 
-    public void put(String key, ResourceRecord[] records)
+    public void put(String key, ResourceRecord[] records, long expireTime)
     {
-        cachePool.put(key, records);
+        cachePool.put(key, new CachedItem(records, expireTime));
     }
 
     static volatile CacheManager instance;
     private CacheManager()
     {
-        cachePool = new LRU<String, ResourceRecord[]>(4096 * 100);
+        cachePool = new LRU<String, CachedItem>(4096 * 100);
     }
 
     public static CacheManager getInstance()
@@ -39,5 +45,21 @@ public final class CacheManager
             }
         }
         return instance;
+    }
+
+    static class CachedItem<T>
+    {
+        public long expireTime;
+        public T entity;
+        public CachedItem(T entity, long expireTime)
+        {
+            this.entity = entity;
+            this.expireTime = expireTime;
+        }
+
+        public boolean expired()
+        {
+            return System.currentTimeMillis() > expireTime;
+        }
     }
 }

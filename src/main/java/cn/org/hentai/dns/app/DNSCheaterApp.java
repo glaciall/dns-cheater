@@ -1,6 +1,7 @@
 package cn.org.hentai.dns.app;
 
 import cn.org.hentai.dns.dns.NameServer;
+import cn.org.hentai.dns.dns.RecursiveResolver;
 import cn.org.hentai.dns.dns.RuleManager;
 import cn.org.hentai.dns.util.BeanUtils;
 import cn.org.hentai.dns.util.Configs;
@@ -40,6 +41,7 @@ public class DNSCheaterApp
         Configs.init("/application.properties");
 
         RuleManager.getInstance().init();
-        new NameServer().start();
+        NameServer.getInstance().init();
+        RecursiveResolver.getInstance().init();
     }
 }

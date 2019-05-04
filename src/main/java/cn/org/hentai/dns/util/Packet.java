@@ -51,12 +51,28 @@ public class Packet
         return this;
     }
 
+    public Packet setShort(short s)
+    {
+        this.data[offset++] = (byte)((s >> 8) & 0xff);
+        this.data[offset++] = (byte)(s & 0xff);
+        return this;
+    }
+
     public Packet addInt(int i)
     {
         this.data[size++] = (byte)((i >> 24) & 0xff);
         this.data[size++] = (byte)((i >> 16) & 0xff);
         this.data[size++] = (byte)((i >> 8) & 0xff);
         this.data[size++] = (byte)(i & 0xff);
+        return this;
+    }
+
+    public Packet setInt(int i)
+    {
+        this.data[offset++] = (byte)((i >> 24) & 0xff);
+        this.data[offset++] = (byte)((i >> 16) & 0xff);
+        this.data[offset++] = (byte)((i >> 8) & 0xff);
+        this.data[offset++] = (byte)(i & 0xff);
         return this;
     }
 

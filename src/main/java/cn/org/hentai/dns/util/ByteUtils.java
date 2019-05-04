@@ -107,6 +107,13 @@ public final class ByteUtils
         return bytes;
     }
 
+    public static int getShort(byte[] data, int offset, int length)
+    {
+        short val = 0;
+        for (int i = 0; i < length; i++) val |= (data[offset + i] & 0xff) << ((length - i - 1) * 8);
+        return val;
+    }
+
     public static int getInt(byte[] data, int offset, int length)
     {
         int val = 0;

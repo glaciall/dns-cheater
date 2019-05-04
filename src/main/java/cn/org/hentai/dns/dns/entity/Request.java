@@ -11,6 +11,7 @@ import java.net.SocketAddress;
  */
 public class Request
 {
+    public short sequence;
     public Packet packet;
     public SocketAddress remoteAddress;
 

@@ -31,6 +31,11 @@ public class LRU<K, V>
         return map.get(key);
     }
 
+    public synchronized V remove(K key)
+    {
+        return map.remove(key);
+    }
+
     public synchronized void put(K key, V value)
     {
         map.put(key, value);

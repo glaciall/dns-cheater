@@ -9,7 +9,6 @@ import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.IPUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
@@ -85,7 +84,19 @@ public class NameResolveWorker extends Thread
             if (answer == null)
             {
                 logger.info("no matched rules for: " + question.name);
+                logger.info("转交给上游DNS服务器解答...");
                 // TODO: 如果有缓存并且缓存未过期，则返回缓存内容，否则交给递归解析线程去上游服务器解析
+                ResourceRecord[] records = cacheManager.get(question.name);
+                if (records != null)
+                {
+                    logger.info("resolved from cache: name = {}, answer = {}", question.name, answer.getAddress());
+                    byte[] resp = SimpleMessageEncoder.encode(msg, question, records);
+                    this.nameServer.putResponse(new Response(request.remoteAddress, resp));
+                }
+                else
+                {
+                    RecursiveResolver.getInstance().putRequest(request);
+                }
             }
             else
             {

@@ -1,5 +1,6 @@
 package cn.org.hentai.dns.dns;
 
+import cn.org.hentai.dns.dns.coder.SimpleMessageEncoder;
 import cn.org.hentai.dns.dns.entity.Request;
 import cn.org.hentai.dns.dns.entity.Response;
 import cn.org.hentai.dns.util.ByteUtils;
@@ -8,43 +9,48 @@ import cn.org.hentai.dns.util.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by matrixy on 2019/4/19.
  */
-public class NameServer extends Thread
+public class RecursiveResolver extends Thread
 {
-    static Logger logger = LoggerFactory.getLogger(NameServer.class);
-
-    NameResolveWorker[] resolveWorkers = null;
+    static Logger logger = LoggerFactory.getLogger(RecursiveResolver.class);
     ArrayBlockingQueue<Request> queries = null;
     ArrayBlockingQueue<Response> responses = null;
+    Map<Short, SocketAddress> transactionMap = null;
+
+    RecursiveResolveWorker[] resolveWorkers = null;
+
+    short sequence = 1;
 
     AtomicLong totalQueryCount = new AtomicLong(0);
+    AtomicLong totalAnswerCount = new AtomicLong(0);
 
-    public NameServer()
+    public RecursiveResolver()
     {
-        this.setName("nameserver-thread");
-        this.resolveWorkers = new NameResolveWorker[Runtime.getRuntime().availableProcessors() * 2];
+        this.setName("recursive-resolver-thread");
         this.queries = new ArrayBlockingQueue<Request>(65535);
         this.responses = new ArrayBlockingQueue<Response>(65535);
-        for (int i = 0; i < this.resolveWorkers.length; i++)
+        transactionMap = new HashMap(65535);
+
+        resolveWorkers = new RecursiveResolveWorker[Runtime.getRuntime().availableProcessors()];
+        for (int i = 0; i < resolveWorkers.length; i++)
         {
-            this.resolveWorkers[i] = new NameResolveWorker(this);
-            this.resolveWorkers[i].setName("name-resolve-worker-" + i);
-            this.resolveWorkers[i].start();
+            resolveWorkers[i] = new RecursiveResolveWorker();
+            resolveWorkers[i].setName("recursive-resolve-worker-" + i);
+            resolveWorkers[i].start();
         }
     }
 
@@ -53,18 +59,18 @@ public class NameServer extends Thread
         DatagramChannel datagramChannel = null;
         try
         {
-            int port = Configs.getInt("dns.server.port", 53);
             Selector selector = Selector.open();
 
             datagramChannel = DatagramChannel.open();
-            datagramChannel.socket().bind(new InetSocketAddress(port));
             datagramChannel.configureBlocking(false);
-            datagramChannel.register(selector, SelectionKey.OP_READ);
+            datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
-            logger.info("NameServer started at: {}", port);
+            logger.info("Recursive Resolver started...");
 
             datagramChannel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+            InetSocketAddress upstreamNameServer = new InetSocketAddress(Configs.get("dns.upstream.server.address"), Configs.getInt("dns.upstream.server.port", 53));
 
             datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
             while (!this.isInterrupted())
@@ -83,22 +89,27 @@ public class NameServer extends Thread
                         buffer.get(message, 0, message.length);
 
                         logger.info("##############################################################################################");
-                        logger.info("received: from = {}, length = {}, ", addr.toString(), message.length);
-                        queries.put(new Request(addr, Packet.create(message)));
-                        totalQueryCount.addAndGet(1);
+                        logger.info("answer received: from = {}, length = {}, ", addr.toString(), message.length);
+                        responses.add(new Response(transactionMap.remove(ByteUtils.getShort(message, 0, 2)), message));
+                        totalAnswerCount.addAndGet(1);
                     }
                     while (selectionKey.isWritable())
                     {
-                        if (responses.size() == 0) break;
-                        Response response = responses.poll();
-                        if (response != null)
+                        if (queries.size() == 0) break;
+                        Request request = queries.poll();
+                        if (request != null)
                         {
+                            Packet packet = request.packet;
+                            short seq = sequence++;
+                            request.sequence = seq;
+                            transactionMap.put(seq, request.remoteAddress);
+                            packet.seek(0).setShort(seq);
                             buffer.clear();
-                            buffer.put(response.packet);
+                            buffer.put(packet.getBytes());
                             buffer.flip();
-                            datagramChannel.send(buffer, response.remoteAddress);
-                            logger.info("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
-                            ByteUtils.dump(response.packet);
+                            datagramChannel.send(buffer, upstreamNameServer);
+                            logger.info("send request to upstream: to = {}, length = {}", upstreamNameServer, packet.size());
+                            totalQueryCount.addAndGet(1);
                         }
                     }
                 }
@@ -116,40 +127,38 @@ public class NameServer extends Thread
         }
     }
 
-    public Request takeRequest()
+    public void putRequest(Request request)
     {
         try
         {
-            return queries.take();
+            this.queries.add(request);
         }
         catch(Exception ex)
+        {
+            logger.error("put request error", ex);
+        }
+    }
+
+    public Response takeResponse()
+    {
+        try
+        {
+            return responses.take();
+        }
+        catch (InterruptedException e)
         {
             return null;
         }
     }
 
-    public boolean putResponse(Response response)
-    {
-        try
-        {
-            responses.put(response);
-            return true;
-        }
-        catch (InterruptedException e)
-        {
-            return false;
-        }
-    }
-
-    static NameServer instance = null;
+    static RecursiveResolver instance = null;
     public void init()
     {
         instance.start();
     }
-
-    public static synchronized NameServer getInstance()
+    public static synchronized RecursiveResolver getInstance()
     {
-        if (null == instance) instance = new NameServer();
+        if (null == instance) instance = new RecursiveResolver();
         return instance;
     }
 }
