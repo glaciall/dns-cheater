@@ -51,4 +51,11 @@ public class UserController extends BaseController
         }
         return result;
     }
+
+    @RequestMapping("/logout")
+    public String logout(HttpSession session)
+    {
+        session.removeAttribute("loginUser");
+        return "redirect:/";
+    }
 }
