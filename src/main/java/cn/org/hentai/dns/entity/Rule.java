@@ -30,22 +30,16 @@ public class Rule implements Serializable
 
     private static final long serialVersionUID = 1L;
 
-    private boolean error(String message)
-    {
-        logger.error(message);
-        return false;
-    }
-
     public boolean matches(int now, long ip, String domainName)
     {
         // 时间段，07:34:11 -> 08:01:01
         // Inet4Address.getLoopbackAddress();
-        if (ipFrom != null && ip < ipFrom) return error("ip 开始段不符合");
-        if (ipTo != null && ip > ipTo) return error("ip 结束段不符合");
+        if (ipFrom != null && ip < ipFrom) return false;
+        if (ipTo != null && ip > ipTo) return false;
 
         // 时间
-        if (timeFrom != null && now < timeFrom) return error("时间开始段不符合");
-        if (timeTo != null && now > timeTo) return error("时间结束段不符合");
+        if (timeFrom != null && now < timeFrom) return false;
+        if (timeTo != null && now > timeTo) return false;
 
         // 域名匹配
         if ("prefix".equals(matchMode)) return domainName.startsWith(name);
