@@ -1,16 +1,16 @@
 package cn.org.hentai.dns.cache;
 
+import cn.org.hentai.dns.dns.entity.CachedItem;
 import cn.org.hentai.dns.dns.entity.ResourceRecord;
 
 /**
  * Created by matrixy on 2019/4/23.
- * LRC+k缓存实现
  */
 public final class CacheManager
 {
     LRU<String, CachedItem> cachePool = null;
 
-    public ResourceRecord[] get(String key)
+    public CachedItem get(String key)
     {
         CachedItem item = cachePool.get(key);
         if (item == null) return null;
@@ -19,15 +19,13 @@ public final class CacheManager
             cachePool.remove(key);
             return null;
         }
-        return (ResourceRecord[]) item.entity;
+        return item;
     }
 
     public void put(String key, ResourceRecord[] records, long expireTime)
     {
         cachePool.put(key, new CachedItem(records, expireTime));
     }
-
-    // TODO: 需要定时清理已经过期的缓存项
 
     static volatile CacheManager instance;
     private CacheManager()
@@ -48,21 +46,5 @@ public final class CacheManager
             }
         }
         return instance;
-    }
-
-    static class CachedItem<T>
-    {
-        public long expireTime;
-        public T entity;
-        public CachedItem(T entity, long expireTime)
-        {
-            this.entity = entity;
-            this.expireTime = expireTime;
-        }
-
-        public boolean expired()
-        {
-            return System.currentTimeMillis() > expireTime;
-        }
     }
 }
