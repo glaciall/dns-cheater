@@ -31,7 +31,7 @@ public final class RuleManager
     {
         for (Rule rule : rules)
         {
-            if (rule.matches(now, ip, domainName))
+            if (rule.getEnabled() && rule.matches(now, ip, domainName))
             {
                 return rule.dispatchAddress(ip);
             }
