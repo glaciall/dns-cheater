@@ -13,6 +13,7 @@ public final class CacheManager
     public ResourceRecord[] get(String key)
     {
         CachedItem item = cachePool.get(key);
+        if (item == null) return null;
         if (item.expired())
         {
             cachePool.remove(key);
@@ -25,6 +26,8 @@ public final class CacheManager
     {
         cachePool.put(key, new CachedItem(records, expireTime));
     }
+
+    // TODO: 需要定时清理已经过期的缓存项
 
     static volatile CacheManager instance;
     private CacheManager()

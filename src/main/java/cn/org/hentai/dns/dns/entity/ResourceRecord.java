@@ -1,6 +1,7 @@
 package cn.org.hentai.dns.dns.entity;
 
 import cn.org.hentai.dns.util.ByteUtils;
+import cn.org.hentai.dns.util.IPUtils;
 
 import java.net.Inet6Address;
 
@@ -64,5 +65,12 @@ public class ResourceRecord
         {
             return ByteUtils.toString(data);
         }
+    }
+
+    public String toString()
+    {
+        if (type == Message.TYPE_A) return "[" + IPUtils.fromInteger(this.ipv4) + "]";
+        else if (type == Message.TYPE_AAAA) return "[" + ipv6.toString() + "]";
+        else return "[" + ByteUtils.toString(data) + "]";
     }
 }

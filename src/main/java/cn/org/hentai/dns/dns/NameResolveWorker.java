@@ -89,7 +89,7 @@ public class NameResolveWorker extends Thread
                 ResourceRecord[] records = cacheManager.get(question.name);
                 if (records != null)
                 {
-                    logger.info("resolved from cache: name = {}, answer = {}", question.name, answer.getAddress());
+                    logger.info("resolved from cache: name = {}, answer = {}", question.name, records);
                     byte[] resp = SimpleMessageEncoder.encode(msg, question, records);
                     this.nameServer.putResponse(new Response(request.remoteAddress, resp));
                 }

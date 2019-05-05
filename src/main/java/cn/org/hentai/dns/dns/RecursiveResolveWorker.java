@@ -105,6 +105,10 @@ public class RecursiveResolveWorker extends Thread
             records.add(new ResourceRecord(question.name, Message.TYPE_A, ttl, answerIP));
         }
         cacheManager.put(question.name, records.toArray(new ResourceRecord[0]), System.currentTimeMillis() + minTTL * 1000);
+
+        // 此时的remoteAddress还是请求方的地址，而非上游服务器端的地址
+        byte[] resp = SimpleMessageEncoder.encode(response.sequence, (int)(minTTL & 0x7fff), question.name, records.toArray(new ResourceRecord[0]));
+        NameServer.getInstance().putResponse(new Response(response.remoteAddress, resp));
     }
 
     public void run()

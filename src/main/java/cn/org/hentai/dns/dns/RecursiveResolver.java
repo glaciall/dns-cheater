@@ -29,7 +29,7 @@ public class RecursiveResolver extends Thread
     static Logger logger = LoggerFactory.getLogger(RecursiveResolver.class);
     ArrayBlockingQueue<Request> queries = null;
     ArrayBlockingQueue<Response> responses = null;
-    Map<Short, SocketAddress> transactionMap = null;
+    Map<Short, OriginalRequest> transactionMap = null;
 
     RecursiveResolveWorker[] resolveWorkers = null;
 
@@ -90,7 +90,10 @@ public class RecursiveResolver extends Thread
 
                         logger.info("##############################################################################################");
                         logger.info("answer received: from = {}, length = {}, ", addr.toString(), message.length);
-                        responses.add(new Response(transactionMap.remove(ByteUtils.getShort(message, 0, 2)), message));
+                        short seq = 0;
+                        OriginalRequest req = transactionMap.remove(seq = (short)ByteUtils.getShort(message, 0, 2));
+                        if (req != null) responses.add(new Response(req.sequence, req.remoteAddress, message));
+                        else logger.info("居然没有查找到原始请求记录？" + seq);
                         totalAnswerCount.addAndGet(1);
                     }
                     while (selectionKey.isWritable())
@@ -102,13 +105,13 @@ public class RecursiveResolver extends Thread
                             Packet packet = request.packet;
                             short seq = sequence++;
                             request.sequence = seq;
-                            transactionMap.put(seq, request.remoteAddress);
+                            transactionMap.put(seq, new OriginalRequest(packet.seek(0).nextShort(), request.remoteAddress));
                             packet.seek(0).setShort(seq);
                             buffer.clear();
                             buffer.put(packet.getBytes());
                             buffer.flip();
                             datagramChannel.send(buffer, upstreamNameServer);
-                            logger.info("send request to upstream: to = {}, length = {}", upstreamNameServer, packet.size());
+                            logger.info("send request to upstream: to = {}, sequence = {}, length = {}", upstreamNameServer, seq, packet.size());
                             totalQueryCount.addAndGet(1);
                         }
                     }
@@ -148,6 +151,18 @@ public class RecursiveResolver extends Thread
         catch (InterruptedException e)
         {
             return null;
+        }
+    }
+
+    static class OriginalRequest
+    {
+        public short sequence;
+        public SocketAddress remoteAddress;
+
+        public OriginalRequest(short seq, SocketAddress addr)
+        {
+            this.sequence = seq;
+            this.remoteAddress = addr;
         }
     }
 

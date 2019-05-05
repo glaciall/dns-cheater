@@ -9,8 +9,16 @@ import java.net.SocketAddress;
  */
 public class Response
 {
+    public short sequence;
     public SocketAddress remoteAddress;
     public byte[] packet;
+
+    public Response(short seq, SocketAddress remoteAddress, byte[] packet)
+    {
+        this.sequence = seq;
+        this.remoteAddress = remoteAddress;
+        this.packet = packet;
+    }
 
     public Response(SocketAddress remoteAddress, byte[] packet)
     {
