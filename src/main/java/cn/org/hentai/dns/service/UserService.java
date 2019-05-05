@@ -88,7 +88,12 @@ public class UserService
         return user;
     }
 
-    private String encode(String text, String nonce)
+    public boolean checkPassword(User user, String password)
+    {
+        return encode(password, user.getSalt()).equals(user.getPassword());
+    }
+
+    public String encode(String text, String nonce)
     {
         return MD5.encode(text + ":::" + nonce);
     }

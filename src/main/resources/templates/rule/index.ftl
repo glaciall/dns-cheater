@@ -3,9 +3,6 @@
 <head>
     <#include "../inc/resource.ftl">
     <title>域名解析设置</title>
-    <style type="text/css">
-        .modal-dialog { width: 1200px; }
-    </style>
 </head>
 <body>
 
@@ -100,6 +97,7 @@
             modal({
                 title : '添加新转发',
                 html : $('#form-add-html').html(),
+                width : 1200,
                 close : true,
                 ok : function(dialog)
                 {

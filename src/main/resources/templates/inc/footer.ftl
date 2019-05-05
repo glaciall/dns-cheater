@@ -216,11 +216,12 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
             text : '',
             html : '',
             close : false,
+            width : 600,
             ok : null
         }, options);
         var shtml = '';
         shtml += '<div class="modal fade">';
-        shtml += '  <div class="modal-dialog">';
+        shtml += '  <div class="modal-dialog" style="width: ' + options.width + 'px;">';
         shtml += '      <div class="modal-content">';
         shtml += '          <div class="modal-header">';
         if (options.close)
@@ -329,9 +330,10 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
                 title : '修改登陆密码',
                 html : form,
                 close : true,
+                width : 480,
                 ok : function(dialog)
                 {
-                    $.post(rootPath + '/manage/user/passwd/reset', dialog.find('form').serialize(), function(result)
+                    $.post(rootPath + '/user/passwd/reset', dialog.find('form').serialize(), function(result)
                     {
                         if (result.error.code) return alert(result.error.reason);
                         alert('修改成功');

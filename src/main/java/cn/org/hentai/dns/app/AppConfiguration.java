@@ -16,7 +16,7 @@ public class AppConfiguration extends WebMvcConfigurerAdapter
     public void addInterceptors(InterceptorRegistry registry)
     {
         registry.addInterceptor(new CommonInterceptor()).addPathPatterns("/**");
-        registry.addInterceptor(new UserInterceptor()).addPathPatterns("/manage/**");
+        registry.addInterceptor(new UserInterceptor()).addPathPatterns("/manage/**").addPathPatterns("/user/logout").addPathPatterns("/user/passwd/reset");
         super.addInterceptors(registry);
     }
 }
