@@ -98,7 +98,6 @@ public class NameServer extends Thread
                             buffer.flip();
                             datagramChannel.send(buffer, response.remoteAddress);
                             logger.info("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
-                            ByteUtils.dump(response.packet);
                         }
                     }
                 }
