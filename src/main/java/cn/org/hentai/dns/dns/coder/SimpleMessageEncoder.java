@@ -45,7 +45,7 @@ public final class SimpleMessageEncoder
             packet.addShort((short)0xc00c);
             packet.addShort((short)answer.type);
             packet.addShort((short)0x01);
-            packet.addInt(answer.ttl);
+            packet.addInt(ttl);
             packet.addShort((short)answer.dlen);
             if (answer.type == TYPE_A)
             {
