@@ -3,6 +3,16 @@
 <head>
     <#include "../inc/resource.ftl">
     <title>域名解析设置</title>
+    <style type="text/css">
+        #form-add select
+        {
+            width: 60px;
+            height: 30px;
+            text-align: center;
+            padding-left: 10px;
+            margin-right: 4px;
+        }
+    </style>
 </head>
 <body>
 
@@ -46,7 +56,7 @@
                         <div class="col-md-5">
                             <input type="text" id="ipFrom" name="ipFrom" class="form-control" placeholder="开始地址，包含">
                         </div>
-                        <div class="col-md-1 text-center">至</div>
+                        <div class="col-md-1 text-center"><p>至</p></div>
                         <div class="col-md-5">
                             <input type="text" id="ipTo" name="ipTo" class="form-control" placeholder="结束地址，包含">
                         </div>
@@ -55,9 +65,10 @@
                 <div class="form-group">
                     <label class="col-md-3 control-label" for="text-input">请求时间段：</label>
                     <div class="col-md-9">
-                        <div class="col-md-5"><input type="text" class="form-control" name="timeFrom" id="timeFrom" /></div>
-                        <div class="col-md-1 text-center">至</div>
-                        <div class="col-md-5"><input type="text" class="form-control" name="timeTo" id="timeTo" /></div>
+                        <div class="col-md-12" id="time-range">
+                            <input type="hidden" name="timeFrom" id="timeFrom" />
+                            <input type="hidden" name="timeTo" id="timeTo" />
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -110,6 +121,33 @@
                     return false;
                 }
             });
+
+            setTimeout(function()
+            {
+                // 时间段选择
+                var s1 = '', s2 = '';
+                s1 = '<select id="tfhour"><option value="">时</option>', s2 = '<select id="tfminute"><option value="">分</option>';
+                for (var i = 0; i < 24; i++) s1 += '<option>' + i + '</option>';
+                for (var i = 0; i < 60; i++) s2 += '<option>' + i + '</option>';
+                s1 += '</select>';
+                s2 += '</select>';
+                $('#time-range').append(s1 + ':' + s2 + ' 至 ' + s1.replace(/tf(hour|minute)/gi, 'tt$1') + s2.replace(/tf(hour|minute)/gi, 'tt$1'));
+            }, 0);
+        });
+
+        $(document).on('change', '#form-add select', function()
+        {
+            var slt = $(this);
+            var id = slt.attr('id');
+            var sltHour = $('#' + id.substring(0, 2) + 'hour');
+            var sltMinute = $('#' + id.substring(0, 2) + 'minute');
+
+            var h = sltHour.val(), m = sltMinute.val();
+            h = h.length == 1 ? '0' + h : h;
+            m = m.length == 1 ? '0' + m : m;
+
+            var xx = id.indexOf('tf') > -1 ? $('#timeFrom') : $('#timeTo');
+            xx.val(h + ':' + m + ':00');
         });
 
         $('#rule-table').paginate({

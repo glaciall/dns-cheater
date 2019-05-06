@@ -1,5 +1,6 @@
 package cn.org.hentai.dns.controller;
 
+import cn.org.hentai.dns.dns.RuleManager;
 import cn.org.hentai.dns.entity.Address;
 import cn.org.hentai.dns.entity.Result;
 import cn.org.hentai.dns.entity.Rule;
@@ -14,6 +15,9 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by matrixy on 2019/5/1.
@@ -84,13 +88,13 @@ public class RuleController extends BaseController
 
             if (!StringUtils.isEmpty(timeFrom))
             {
-                if (timeFrom.matches("^\\d{2}:\\d{2}:\\d{2}$") == false) timeFrom = null;
-                rule.setTimeFrom(Integer.parseInt(timeFrom.replace(":", "")));
+                if (timeFrom.matches("^\\d{2}:\\d{2}:\\d{2}$"))
+                    rule.setTimeFrom(Integer.parseInt(timeFrom.replace(":", "")));
             }
             if (!StringUtils.isEmpty(timeTo))
             {
-                if (timeTo.matches("^\\d{2}:\\d{2}:\\d{2}$") == false) timeTo = null;
-                rule.setTimeTo(Integer.parseInt(timeTo.replace(":", "")));
+                if (timeTo.matches("^\\d{2}:\\d{2}:\\d{2}$"))
+                    rule.setTimeTo(Integer.parseInt(timeTo.replace(":", "")));
             }
             if (rule.getTimeFrom() == null || rule.getTimeTo() == null)
             {
@@ -115,6 +119,7 @@ public class RuleController extends BaseController
             ruleService.create(rule);
 
             int addressCount = 0;
+            List<Address> addrList = new ArrayList(addr.length);
             for (int i = 0; i < addr.length; i++)
             {
                 if (StringUtils.isEmpty(addr[i])) continue;
@@ -126,11 +131,14 @@ public class RuleController extends BaseController
                 item.setAddress(addr[i]);
 
                 addrService.create(item);
+                addrList.add(item);
                 addressCount += 1;
             }
             if (addressCount == 0) throw new RuntimeException("请至少输入一个IP应答地址");
 
-            // TODO: 实时更新内存缓存中的规则列表
+            // 实时更新内存缓存中的规则列表
+            rule.setAddresses(addrList);
+            RuleManager.getInstance().add(rule);
         }
         catch(Exception ex)
         {
@@ -155,6 +163,9 @@ public class RuleController extends BaseController
 
             rule.setEnabled(enabled);
             ruleService.update(rule);
+
+            if (enabled) RuleManager.getInstance().enable(ruleId);
+            else RuleManager.getInstance().disable(ruleId);
         }
         catch(Exception ex)
         {
@@ -176,6 +187,8 @@ public class RuleController extends BaseController
             if (null == rule) throw new RuntimeException("查无此解析规则");
             ruleService.remove(rule);
             addrService.removeByRule(rule);
+
+            RuleManager.getInstance().remove(rule);
         }
         catch(Exception ex)
         {
