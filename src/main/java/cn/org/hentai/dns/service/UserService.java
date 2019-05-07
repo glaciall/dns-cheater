@@ -59,6 +59,7 @@ public class UserService
     {
         User user = getByName(name);
         if (null == user) throw new RuntimeException("用户名或密码错误");
+        if (user.getEnabled() == false) throw new RuntimeException("账号已被禁用");
 
         if (!user.getPassword().equals(encode(password, user.getSalt()))) throw new RuntimeException("用户名或密码错误");
 

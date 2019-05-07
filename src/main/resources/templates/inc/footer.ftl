@@ -333,7 +333,7 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
                 width : 480,
                 ok : function(dialog)
                 {
-                    $.post(rootPath + '/user/passwd/reset', dialog.find('form').serialize(), function(result)
+                    $.post(rootPath + '/manage/user/passwd/reset', dialog.find('form').serialize(), function(result)
                     {
                         if (result.error.code) return alert(result.error.reason);
                         alert('修改成功');

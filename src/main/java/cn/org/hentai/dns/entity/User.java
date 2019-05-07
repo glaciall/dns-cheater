@@ -28,6 +28,14 @@ public class User implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public void secure()
+    {
+        this.password = null;
+        this.salt = null;
+        this.nonce = null;
+        this.accesstoken = null;
+    }
+
     public Long getId() {
         return id;
     }
