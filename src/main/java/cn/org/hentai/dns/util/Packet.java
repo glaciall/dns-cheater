@@ -215,4 +215,9 @@ public class Packet
         System.arraycopy(this.data, this.offset, dest, offset, len);
         this.offset += len;
     }
+
+    public boolean hasEnoughSpace(int count)
+    {
+        return this.size - this.offset >= count;
+    }
 }
