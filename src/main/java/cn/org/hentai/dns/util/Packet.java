@@ -8,7 +8,7 @@ public class Packet
     int size = 0;
     int offset = 0;
     int maxSize = 0;
-    public byte[] data;
+    byte[] data;
 
     private Packet()
     {
@@ -169,6 +169,11 @@ public class Packet
         return this.data[position];
     }
 
+    public int getInt(int offset)
+    {
+        return (this.data[offset++] & 0xff) << 24 | (this.data[offset++] & 0xff) << 16 | (this.data[offset++] & 0xff) << 8 | (this.data[offset++] & 0xff);
+    }
+
     public byte[] get(int offset, int length)
     {
         byte[] buf = new byte[length];
@@ -218,6 +223,6 @@ public class Packet
 
     public boolean hasEnoughSpace(int count)
     {
-        return this.size - this.offset >= count;
+        return (this.maxSize - this.offset) > count;
     }
 }

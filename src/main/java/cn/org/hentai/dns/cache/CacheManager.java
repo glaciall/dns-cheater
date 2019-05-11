@@ -27,6 +27,11 @@ public final class CacheManager
         cachePool.put(key, new CachedItem(records, expireTime));
     }
 
+    public int getCachedCount()
+    {
+        return cachePool.usedSize();
+    }
+
     static volatile CacheManager instance;
     private CacheManager()
     {

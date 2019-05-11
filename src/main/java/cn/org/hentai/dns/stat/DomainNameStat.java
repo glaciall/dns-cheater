@@ -8,6 +8,7 @@ public class DomainNameStat
     public int id;
     public String name;
     public int queryCount;
+    public boolean success;
 
     public DomainNameStat(int id, String name)
     {

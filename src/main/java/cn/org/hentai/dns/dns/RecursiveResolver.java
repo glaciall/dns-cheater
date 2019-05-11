@@ -3,6 +3,7 @@ package cn.org.hentai.dns.dns;
 import cn.org.hentai.dns.dns.coder.SimpleMessageEncoder;
 import cn.org.hentai.dns.dns.entity.Request;
 import cn.org.hentai.dns.dns.entity.Response;
+import cn.org.hentai.dns.stat.StatManager;
 import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.Configs;
 import cn.org.hentai.dns.util.Packet;
@@ -34,9 +35,6 @@ public class RecursiveResolver extends Thread
     RecursiveResolveWorker[] resolveWorkers = null;
 
     short sequence = 1;
-
-    AtomicLong totalQueryCount = new AtomicLong(0);
-    AtomicLong totalAnswerCount = new AtomicLong(0);
 
     public RecursiveResolver()
     {
@@ -93,8 +91,7 @@ public class RecursiveResolver extends Thread
                         short seq = 0;
                         OriginalRequest req = transactionMap.remove(seq = (short)ByteUtils.getShort(message, 0, 2));
                         if (req != null) responses.add(new Response(req.sequence, req.remoteAddress, message));
-                        else logger.info("居然没有查找到原始请求记录？" + seq);
-                        totalAnswerCount.addAndGet(1);
+                        else logger.info("no original request found for: " + seq);
                     }
                     while (selectionKey.isWritable())
                     {
@@ -112,7 +109,6 @@ public class RecursiveResolver extends Thread
                             buffer.flip();
                             datagramChannel.send(buffer, upstreamNameServer);
                             logger.info("send request to upstream: to = {}, sequence = {}, length = {}", upstreamNameServer, seq, packet.size());
-                            totalQueryCount.addAndGet(1);
                         }
                     }
                 }

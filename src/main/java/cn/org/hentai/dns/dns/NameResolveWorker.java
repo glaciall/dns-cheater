@@ -5,6 +5,7 @@ import cn.org.hentai.dns.dns.coder.SimpleMessageDecoder;
 import cn.org.hentai.dns.dns.coder.SimpleMessageEncoder;
 import cn.org.hentai.dns.dns.entity.*;
 import cn.org.hentai.dns.entity.Address;
+import cn.org.hentai.dns.stat.StatManager;
 import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.IPUtils;
 import org.slf4j.Logger;
@@ -79,7 +80,12 @@ public class NameResolveWorker extends Thread
                 continue;
             }
 
+
             long remoteAddr = ByteUtils.getLong(((InetSocketAddress) request.remoteAddress).getAddress().getAddress(), 0, 4);
+
+            // 计数
+            StatManager.getInstance().log(remoteAddr, now, question.name);
+
             Address answer = RuleManager.getInstance().matches(now, remoteAddr, question.name);
             if (answer == null)
             {
@@ -96,6 +102,7 @@ public class NameResolveWorker extends Thread
                 }
                 else
                 {
+                    StatManager.getInstance().addQueryUpstreamCount();
                     RecursiveResolver.getInstance().putRequest(request);
                 }
             }

@@ -2,6 +2,7 @@ package cn.org.hentai.dns.dns;
 
 import cn.org.hentai.dns.dns.entity.Request;
 import cn.org.hentai.dns.dns.entity.Response;
+import cn.org.hentai.dns.stat.StatManager;
 import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.Configs;
 import cn.org.hentai.dns.util.Packet;
@@ -32,8 +33,6 @@ public class NameServer extends Thread
     ArrayBlockingQueue<Request> queries = null;
     ArrayBlockingQueue<Response> responses = null;
 
-    AtomicLong totalQueryCount = new AtomicLong(0);
-
     public NameServer()
     {
         this.setName("nameserver-thread");
@@ -53,6 +52,8 @@ public class NameServer extends Thread
         DatagramChannel datagramChannel = null;
         try
         {
+            StatManager statMgr = StatManager.getInstance();
+
             int port = Configs.getInt("dns.server.port", 53);
             Selector selector = Selector.open();
 
@@ -85,7 +86,6 @@ public class NameServer extends Thread
                         logger.info("##############################################################################################");
                         logger.info("received: from = {}, length = {}, ", addr.toString(), message.length);
                         queries.put(new Request(addr, Packet.create(message)));
-                        totalQueryCount.addAndGet(1);
                     }
                     while (selectionKey.isWritable())
                     {
@@ -93,6 +93,8 @@ public class NameServer extends Thread
                         Response response = responses.poll();
                         if (response != null)
                         {
+                            statMgr.addAnswerCount();
+
                             buffer.clear();
                             buffer.put(response.packet);
                             buffer.flip();
