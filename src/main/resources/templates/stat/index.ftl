@@ -5,6 +5,7 @@
     <title>实时监控</title>
     <style type="text/css">
         .info-box { height: 120px !important; }
+        .info-box .count { margin-top: 10px !important; margin-bottom: 10px !important; }
         #everyMinuteQueries { height: 340px; }
     </style>
 </head>
