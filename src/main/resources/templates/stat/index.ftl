@@ -7,6 +7,7 @@
         .info-box { height: 120px !important; }
         .info-box .count { margin-top: 10px !important; margin-bottom: 10px !important; }
         #everyMinuteQueries { height: 340px; }
+        #topQueryClients, #topQueryNames { min-height: 408px; }
     </style>
 </head>
 <body>
@@ -71,33 +72,28 @@
             </div>
 
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <i class="fa fa-user"></i>
                             <h2>今日查询来源IP TOP10</h2>
                         </div>
-                        <div class="panel-body">
-                            整个表格
+                        <div class="panel-body" id="topQueryClients">
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <i class="fa fa-star-half-full"></i>
                             <h2>今日查询域名 TOP10</h2>
                         </div>
-                        <div class="panel-body">
-                            整个表格
+                        <div class="panel-body" id="topQueryNames">
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-4">
-
-                </div>
             </div>
 
         </div>
@@ -111,6 +107,8 @@
     {
         loadSummary();
         loadEveryMinuteQueries();
+        loadTop10QueryClients();
+        loadTop10QueryNames();
     });
 
     // 今日每分钟查询量
@@ -179,7 +177,29 @@
         $.post('./topQueryClients', {}, function(result)
         {
             if (result.error && result.error.code) return setTimeout(loadTop10QueryClients, 10000);
-            // ...
+            var shtml = '';
+            shtml += '<table class="table bootstrap-datatable datatable small-font dataTable no-footer">';
+            shtml += '  <thead>';
+            shtml += '      <tr>';
+            shtml += '          <th class="text-center" width="60">#</th>';
+            shtml += '          <th class="text-left">IP</th>';
+            shtml += '          <th class="text-center" width="120">查询次数</th>';
+            shtml += '      </tr>';
+            shtml += '  </thead>';
+            shtml += '  <tbody>';
+            for (var i = 0; i < result.data.length; i++)
+            {
+                var item = result.data[i];
+                shtml += '<tr>';
+                shtml += '  <td class="text-center">' + (i + 1) + '</td>';
+                shtml += '  <td class="text-left">' + item.ip + '</td>';
+                shtml += '  <td class="text-center">' + item.queryCount + '</td>';
+                shtml += '</tr>';
+            }
+            shtml += '</table>';
+            $('#topQueryClients').html(shtml);
+
+            setTimeout(loadTop10QueryClients, 10000);
         });
     }
 
@@ -189,7 +209,29 @@
         $.post('./topQueryNames', {}, function(result)
         {
             if (result.error && result.error.code) return setTimeout(loadTop10QueryNames, 10000);
-            // ...
+            var shtml = '';
+            shtml += '<table class="table bootstrap-datatable datatable small-font dataTable no-footer">';
+            shtml += '  <thead>';
+            shtml += '      <tr>';
+            shtml += '          <th class="text-center" width="60">#</th>';
+            shtml += '          <th class="text-left">域名</th>';
+            shtml += '          <th class="text-center" width="120">查询次数</th>';
+            shtml += '      </tr>';
+            shtml += '  </thead>';
+            shtml += '  <tbody>';
+            for (var i = 0; i < result.data.length; i++)
+            {
+                var item = result.data[i];
+                shtml += '<tr>';
+                shtml += '  <td class="text-center">' + (i + 1) + '</td>';
+                shtml += '  <td class="text-left">' + item.name + '</td>';
+                shtml += '  <td class="text-center">' + item.queryCount + '</td>';
+                shtml += '</tr>';
+            }
+            shtml += '</table>';
+            $('#topQueryNames').html(shtml);
+
+            setTimeout(loadTop10QueryNames, 10000);
         });
     }
 
