@@ -74,13 +74,6 @@ public class NameResolveWorker extends Thread
         for (Question question : questions)
         {
             logger.info("resolve: name = {}, type = {}", question.name, question.type);
-            if (question.type != Message.TYPE_A && question.type != Message.TYPE_AAAA)
-            {
-                logger.error("unsupported query type: {}", question.type);
-                continue;
-            }
-
-
             long remoteAddr = ByteUtils.getLong(((InetSocketAddress) request.remoteAddress).getAddress().getAddress(), 0, 4);
 
             // 计数
@@ -96,7 +89,7 @@ public class NameResolveWorker extends Thread
                 {
                     int ttl = cache.getTTL();
                     ResourceRecord[] records = cache.entity;
-                    logger.info("resolved from cache: name = {}, answer = {}", question.name, records);
+                    logger.info("resolved from cache: name = {}, answers = {}", question.name, records);
                     byte[] resp = SimpleMessageEncoder.encode((short)(msg.transactionId & 0xffff), ttl, question.name, records);
                     this.nameServer.putResponse(new Response(request.remoteAddress, resp));
                 }
