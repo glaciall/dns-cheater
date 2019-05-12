@@ -13,6 +13,6 @@ public class PortalController
     @RequestMapping("/")
     public String index()
     {
-        return "redirect:/manage/rule/";
+        return "redirect:/manage/stat/";
     }
 }
