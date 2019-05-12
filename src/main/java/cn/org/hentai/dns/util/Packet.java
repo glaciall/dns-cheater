@@ -58,6 +58,13 @@ public class Packet
         return this;
     }
 
+    public Packet setShort(int offset, short s)
+    {
+        this.data[offset++] = (byte)((s >> 8) & 0xff);
+        this.data[offset++] = (byte)(s & 0xff);
+        return this;
+    }
+
     public Packet addInt(int i)
     {
         this.data[size++] = (byte)((i >> 24) & 0xff);

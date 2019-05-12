@@ -76,7 +76,9 @@ public class RecursiveResolveWorker extends Thread
         Question question = questions.get(0);
         if (msg.answerRRs == 0)
         {
-            logger.error("no answer for: {}", question.name);
+            logger.error("no answer for: {}, forward the upstream response...", question.name);
+            packet.setShort(0, response.sequence);
+            NameServer.getInstance().putResponse(new Response(response.remoteAddress, packet.getBytes()));
             return;
         }
 
