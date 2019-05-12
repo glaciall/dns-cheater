@@ -6,3 +6,13 @@ DNS服务器，Domain Name Server，域名解析服务器，互联网上相互�
 2. 企业内部云的DNS支持，实现内部域名的解析、CDN模拟、域名层面的负载均衡。
 3. 上网行为控制，通过将指定域名的IP解析到127.0.0.1等不可达或不正确的IP上来实现网站屏蔽。
 4. 内部带宽控制，通过将指定域名的IP解析到一个HTTP代理缓存服务器上，实现流量复用。
+
+### 界面截图
+#### 实时监控
+<img src="./doc/dns-stat.png" />
+
+#### DNS条目管理
+<img src="./doc/dns-setting.png" />
+
+#### 添加新解析规则
+<img src="./doc/dns-create.png" />
