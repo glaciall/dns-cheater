@@ -184,11 +184,15 @@ public class RuleController extends BaseController
                              @RequestParam String addresses)
     {
         Result result = new Result();
+
+        Rule entity = null;
         try
         {
-            Rule rule = ruleService.getById(ruleId);
-            if (rule == null) throw new RuntimeException("查无此解析规则");
-            RuleManager.getInstance().remove(rule);
+            entity = ruleService.getById(ruleId);
+            if (entity == null) throw new RuntimeException("查无此解析规则");
+            RuleManager.getInstance().remove(entity);
+
+            Rule rule = new Rule();
 
             if (!StringUtils.isEmpty(ipFrom))
             {
@@ -260,6 +264,7 @@ public class RuleController extends BaseController
         }
         catch(Exception ex)
         {
+            if (entity != null) RuleManager.getInstance().add(entity);
             result.setError(ex);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
