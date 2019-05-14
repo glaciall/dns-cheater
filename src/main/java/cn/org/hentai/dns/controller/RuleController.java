@@ -148,7 +148,123 @@ public class RuleController extends BaseController
         return result;
     }
 
+    // 获取解析规则的详细信息，用于修改
+    @RequestMapping("/query")
+    @ResponseBody
+    public Result query(@RequestParam Long ruleId)
+    {
+        Result result = new Result();
+        try
+        {
+            Rule rule = ruleService.getById(ruleId);
+            if (rule == null) throw new RuntimeException("查无此解析规则");
+
+            rule.setAddresses(addrService.find(ruleId));
+            result.setData(rule);
+        }
+        catch(Exception ex)
+        {
+            result.setError(ex);
+        }
+        return result;
+    }
+
     // 修改解析规则，含增删IP条目
+    @RequestMapping("/update")
+    @ResponseBody
+    @Transactional
+    public Result updateRule(@RequestParam Long ruleId,
+                             @RequestParam String ipFrom,
+                             @RequestParam String ipTo,
+                             @RequestParam String timeFrom,
+                             @RequestParam String timeTo,
+                             @RequestParam String matchMode,
+                             @RequestParam String name,
+                             @RequestParam String dispatchMode,
+                             @RequestParam String addresses)
+    {
+        Result result = new Result();
+        try
+        {
+            Rule rule = ruleService.getById(ruleId);
+            if (rule == null) throw new RuntimeException("查无此解析规则");
+            RuleManager.getInstance().remove(rule);
+
+            if (!StringUtils.isEmpty(ipFrom))
+            {
+                if (ipFrom.matches("^(\\d{1,3})(\\.\\d{1,3}){3}$") == false)
+                    throw new RuntimeException("请输入正确的IP开始地址");
+                rule.setIpFrom(IPUtils.toInteger(ipFrom));
+            }
+            if (!StringUtils.isEmpty(ipTo))
+            {
+                if (ipTo.matches("^(\\d{1,3})(\\.\\d{1,3}){3}$") == false)
+                    throw new RuntimeException("请输入正确的IP结束地址");
+                rule.setIpTo(IPUtils.toInteger(ipTo));
+            }
+
+            if (!StringUtils.isEmpty(timeFrom))
+            {
+                if (timeFrom.matches("^\\d{2}:\\d{2}:\\d{2}$"))
+                    rule.setTimeFrom(Integer.parseInt(timeFrom.replace(":", "")));
+            }
+            if (!StringUtils.isEmpty(timeTo))
+            {
+                if (timeTo.matches("^\\d{2}:\\d{2}:\\d{2}$"))
+                    rule.setTimeTo(Integer.parseInt(timeTo.replace(":", "")));
+            }
+            if (rule.getTimeFrom() == null || rule.getTimeTo() == null)
+            {
+                rule.setTimeFrom(null);
+                rule.setTimeTo(null);
+            }
+            String[] addr = addresses.split("\r\n");
+
+            if (StringUtils.isEmpty(matchMode)) matchMode = "contains";
+            if (!matchMode.matches("^(suffix)|(prefix)|(contains)$")) throw new RuntimeException("请选择匹配模式");
+            if (StringUtils.isEmpty(name)) throw new RuntimeException("请输入要匹配解析的域名");
+            if (StringUtils.isEmpty(dispatchMode)) dispatchMode = "round-robin";
+            if (!dispatchMode.matches("^(round-robin)|(iphash)|(random)$")) throw new RuntimeException("请选择应答IP的分发模式");
+            if (addr == null || addr.length == 0) throw new RuntimeException("请至少添加一个IP地址");
+
+            rule.setPriority(0);
+            rule.setMatchMode(matchMode);
+            rule.setName(name);
+            rule.setEnabled(true);
+            rule.setDispatchMode(dispatchMode);
+
+            ruleService.update(rule);
+            addrService.removeByRule(rule);
+
+            int addressCount = 0;
+            List<Address> addrList = new ArrayList(addr.length);
+            for (int i = 0; i < addr.length; i++)
+            {
+                if (StringUtils.isEmpty(addr[i])) continue;
+                if (addr[i].matches("^(\\d{1,3})(\\.\\d{1,3}){3}$") == false) throw new RuntimeException("请输入正确格式的IP应答地址");
+
+                Address item = new Address();
+                item.setRuleId(rule.getId());
+                item.setType("IPv4");
+                item.setAddress(addr[i]);
+
+                addrService.create(item);
+                addrList.add(item);
+                addressCount += 1;
+            }
+            if (addressCount == 0) throw new RuntimeException("请至少输入一个IP应答地址");
+
+            // 实时更新内存缓存中的规则列表
+            rule.setAddresses(addrList);
+            RuleManager.getInstance().add(rule);
+        }
+        catch(Exception ex)
+        {
+            result.setError(ex);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+        return result;
+    }
 
     // 禁用/启用解析规则
     @RequestMapping("/setEnable")

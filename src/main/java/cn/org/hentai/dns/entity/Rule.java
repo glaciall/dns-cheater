@@ -1,5 +1,6 @@
 package cn.org.hentai.dns.entity;
 
+import cn.org.hentai.dns.util.IPUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +106,13 @@ public class Rule implements Serializable
         return ipFrom;
     }
 
+    public String getFromIP()
+    {
+        if (this.ipFrom != null)
+            return IPUtils.fromInteger(this.ipFrom);
+        else return null;
+    }
+
     public Rule withIpFrom(Long ipFrom) {
         this.setIpFrom(ipFrom);
         return this;
@@ -116,6 +124,12 @@ public class Rule implements Serializable
 
     public Long getIpTo() {
         return ipTo;
+    }
+
+    public String getToIP()
+    {
+        if (this.ipTo != null) return IPUtils.fromInteger(this.ipTo);
+        else return null;
     }
 
     public Rule withIpTo(Long ipTo) {

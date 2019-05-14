@@ -122,17 +122,7 @@
                 }
             });
 
-            setTimeout(function()
-            {
-                // 时间段选择
-                var s1 = '', s2 = '';
-                s1 = '<select id="tfhour"><option value="">时</option>', s2 = '<select id="tfminute"><option value="">分</option>';
-                for (var i = 0; i < 24; i++) s1 += '<option>' + i + '</option>';
-                for (var i = 0; i < 60; i++) s2 += '<option>' + i + '</option>';
-                s1 += '</select>';
-                s2 += '</select>';
-                $('#time-range').append(s1 + ':' + s2 + ' 至 ' + s1.replace(/tf(hour|minute)/gi, 'tt$1') + s2.replace(/tf(hour|minute)/gi, 'tt$1'));
-            }, 0);
+            setTimeout(setupTimePicker, 0);
         });
 
         $(document).on('change', '#form-add select', function()
@@ -264,6 +254,35 @@
         });
     });
 
+    function setupTimePicker(from, to)
+    {
+        var fh = typeof(from) == 'undefined' ? null : parseInt(from / 10000);
+        var fm = typeof(from) == 'undefined' ? null : (from / 100) % 100;
+        var th = typeof(to) == 'undefined' ? null : parseInt(to / 10000);
+        var tm = typeof(to) == 'undefined' ? null : (to / 100) % 100;
+
+        // 时间段选择
+        var s1 = '', s2 = '';
+        var ss1 = '', ss2 = '';
+        s1 = '<select id="tfhour"><option value="">时</option>', s2 = '<select id="tfminute"><option value="">分</option>';
+        ss1 = '<select id="tthour"><option value="">时</option>', ss2 = '<select id="ttminute"><option value="">分</option>';
+        for (var i = 0; i < 24; i++)
+        {
+            s1 += '<option ' + (i == fh ? 'selected' : '') + '>' + i + '</option>';
+            ss1 += '<option ' + (i == th ? 'selected' : '') + '>' + i + '</option>';
+        }
+        for (var i = 0; i < 60; i++)
+        {
+            s2 += '<option ' + (i == fm ? 'selected' : '') + '>' + i + '</option>';
+            ss2 += '<option ' + (i == tm ? 'selected' : '') + '>' + i + '</option>';
+        }
+        s1 += '</select>';
+        s2 += '</select>';
+        ss1 += '</select>';
+        ss2 += '</select>';
+        $('#time-range').append(s1 + ':' + s2 + ' 至 ' + ss1 + ':' + ss2);
+    }
+
     function setEnabled(ruleId, enabled)
     {
         $.post('${context}/manage/rule/setEnable', { ruleId : ruleId, enabled : enabled }, function(result)
@@ -274,7 +293,55 @@
 
     function edit(ruleId)
     {
+        $.post('./query', { ruleId : ruleId }, function(result)
+        {
+            if (result.error && result.error.code) return alert(result.error.reason);
+            modal({
+                title : '修改解析规则',
+                html : $('#form-add-html').html(),
+                width : 1200,
+                close : true,
+                ok : function(dialog)
+                {
+                    $.post('${context}/manage/rule/update', $('#form-add').serialize() + '&ruleId=' + ruleId, function(result)
+                    {
+                        if (result.error.code != 0) return alert(result.error.reason);
+                        $('.modal').modal('hide');
+                        $('#rule-table').paginate('reload');
+                    });
+                    return false;
+                }
+            });
 
+            setTimeout(function()
+            {
+                setupTimePicker(result.data.timeFrom, result.data.timeTo);
+                $('#ipFrom').val(result.data.fromIP || '');
+                $('#ipTo').val(result.data.toIP || '');
+                $('input[name=matchMode]').each(function()
+                {
+                    var radiobox = $(this);
+                    if (radiobox.val() == result.data.matchMode)
+                    {
+                        radiobox.attr('checked', 'checked');
+                        return false;
+                    }
+                });
+                $('#name').val(result.data.name);
+                $('input[name=dispatchMode]').each(function()
+                {
+                    var radiobox = $(this);
+                    if (radiobox.val() == result.data.dispatchMode)
+                    {
+                        radiobox.attr('checked', 'checked');
+                        return false;
+                    }
+                });
+                var ipList = [];
+                for (var i = 0; result.data.addresses && i < result.data.addresses.length; i++) ipList.push(result.data.addresses[i].address);
+                $('#addresses').val(ipList.join('\n'));
+            }, 0);
+        });
     }
 
     function remove(ruleId)
