@@ -7,6 +7,20 @@ DNS服务器，Domain Name Server，域名解析服务器，互联网上相互�
 3. 上网行为控制，通过将指定域名的IP解析到127.0.0.1等不可达或不正确的IP上来实现网站屏蔽。
 4. 内部带宽控制，通过将指定域名的IP解析到一个HTTP代理缓存服务器上，实现流量复用。
 
+### 启动
+1. 查看并修改好配置文件`application.properties`，按配置文件里的库名和用户名密码创建好，或使用现成的数据库账号，使用`/doc/tables.sql`数据库建表脚本创建好相应的表
+2. 配置文件里的`dns.upstream.server.address`为上游DNS服务器地址，将为本DNS服务器提供递归解析能力，当遇到本地解析规则所不支持的域名时，将向上游DNS服务器进行查询并回应。
+3. 使用`mvn package`打包后直接用`java -jar original-dns-cheater-1.0-SNAPSHOT.jar`启动。
+4. 或是直接在IDE中启动主入口程序`cn.org.hentai.dns.app.DNSCheaterAPP`。
+5. 此时可以登陆网页管理控制台，默认为`http://localhost`（如果你是本机运行的话）。
+6. 管理控制台的账号在`tables.sql`里已经准备好了一个，用户名为`admin`，密码为`123456`。
+
+### nslookup测试工具的使用
+1. 打开`命令提示符`或是直接运行`cmd`。
+2. 输入`nslookup`，进入DNS测试工具的命令行交互环境。（可以输入`set d2`来启用高级调试模式，输入`help`查看更多帮助）
+3. 输入`server {我的IP}`来将DNS服务器设置为你所运行的主机的IP地址。
+4. 输入`www.baidu.com`，查看响应的IP。此时已经可以在`WEB管理控制台`下的`服务器监控`下看到实时的请求统计了。
+
 ### 界面截图
 #### 实时监控
 <img src="./doc/dns-stat.png" />
