@@ -95,7 +95,11 @@ public class RecursiveResolver extends Thread
                     }
                     while (selectionKey.isWritable())
                     {
-                        if (queries.size() == 0) break;
+                        if (queries.size() == 0)
+                        {
+                            if (selectionKey.isReadable() == false) Thread.sleep(1);
+                            break;
+                        }
                         Request request = queries.poll();
                         if (request != null)
                         {

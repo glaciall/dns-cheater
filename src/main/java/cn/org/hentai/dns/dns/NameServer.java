@@ -89,7 +89,11 @@ public class NameServer extends Thread
                     }
                     while (selectionKey.isWritable())
                     {
-                        if (responses.size() == 0) break;
+                        if (responses.size() == 0)
+                        {
+                            if (selectionKey.isReadable() == false) Thread.sleep(1);
+                            break;
+                        }
                         Response response = responses.poll();
                         if (response != null)
                         {
