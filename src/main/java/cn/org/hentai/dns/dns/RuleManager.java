@@ -84,8 +84,9 @@ public final class RuleManager
             addrService = BeanUtils.create(AddressService.class);
 
             List<Rule> ruleList = ruleService.find(1, Integer.MAX_VALUE).getList();
-            for (Rule rule : ruleList)
+            for (int i = ruleList.size() - 1; i >= 0; i--)
             {
+                Rule rule = ruleList.get(i);
                 rule.setAddresses(addrService.find(rule.getId()));
                 this.rules.add(rule);
             }

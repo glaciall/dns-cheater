@@ -104,7 +104,7 @@ public class RuleController extends BaseController
             String[] addr = addresses.split("\r\n");
 
             if (StringUtils.isEmpty(matchMode)) matchMode = "contains";
-            if (!matchMode.matches("^(suffix)|(prefix)|(contains)$")) throw new RuntimeException("请选择匹配模式");
+            if (!matchMode.matches("^(suffix)|(prefix)|(contains)|(equals)$")) throw new RuntimeException("请选择匹配模式");
             if (StringUtils.isEmpty(name)) throw new RuntimeException("请输入要匹配解析的域名");
             if (StringUtils.isEmpty(dispatchMode)) dispatchMode = "round-robin";
             if (!dispatchMode.matches("^(round-robin)|(iphash)|(random)$")) throw new RuntimeException("请选择应答IP的分发模式");
@@ -225,7 +225,7 @@ public class RuleController extends BaseController
             String[] addr = addresses.split("\r\n");
 
             if (StringUtils.isEmpty(matchMode)) matchMode = "contains";
-            if (!matchMode.matches("^(suffix)|(prefix)|(contains)$")) throw new RuntimeException("请选择匹配模式");
+            if (!matchMode.matches("^(suffix)|(prefix)|(contains)|(equals)$")) throw new RuntimeException("请选择匹配模式");
             if (StringUtils.isEmpty(name)) throw new RuntimeException("请输入要匹配解析的域名");
             if (StringUtils.isEmpty(dispatchMode)) dispatchMode = "round-robin";
             if (!dispatchMode.matches("^(round-robin)|(iphash)|(random)$")) throw new RuntimeException("请选择应答IP的分发模式");

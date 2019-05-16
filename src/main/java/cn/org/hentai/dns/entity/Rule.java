@@ -45,6 +45,7 @@ public class Rule implements Serializable
         // 域名匹配
         if ("prefix".equals(matchMode)) return domainName.startsWith(name);
         else if ("suffix".equals(matchMode)) return domainName.endsWith(name);
+        else if ("equals".equals(matchMode)) return domainName.equals(name);
         else return domainName.indexOf(name) > -1;
     }
 

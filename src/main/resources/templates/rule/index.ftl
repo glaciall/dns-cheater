@@ -12,6 +12,8 @@
             padding-left: 10px;
             margin-right: 4px;
         }
+        .alert { margin-bottom: 0px !important; }
+        .alert ol { margin-bottom: 0px !important; }
     </style>
 </head>
 <body>
@@ -24,6 +26,20 @@
             <div class="row">
                 <div class="col-lg-12">
                     <h3 class="page-header"><i class="fa fa-laptop"></i> Dashboard</h3>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <div class="alert alert-warning">
+                                <ol>
+                                    <li>以下对于解析规则的添加、修改、启用/禁用、删除等操作将立即生效。</li>
+                                    <li>解析规则的匹配优先级按照添加的顺序而定，先添加先匹配，如果有包含关系的解析规则（如example.com和test.example.com），请注意添加的次序。</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -76,6 +92,7 @@
                     <div class="col-md-9">
                         <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="prefix" /> 前缀匹配，如www.匹配www.sina.com.cn、www.163.com等</label></div>
                         <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="suffix" /> 后缀匹配，如.baidu.com匹配www.baidu.com、tieba.baidu.com等</label></div>
+                        <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="equals" /> 完全匹配，必须与查询的域名一致</label></div>
                         <div class="radio"><label><input type="radio" name="matchMode" id="matchMode" value="contains" checked /> 包含，只要解析的域名中包含指定的域名即可</label></div>
                     </div>
                 </div>
@@ -190,7 +207,7 @@
                     align : 'center',
                     formatter : function(i, v, r)
                     {
-                        return v == 'prefix' ? '前缀匹配' : v == 'suffix' ? '后缀匹配' : '包含';
+                        return v == 'prefix' ? '前缀匹配' : v == 'suffix' ? '后缀匹配' : v == 'equals' ? '完全匹配' : '包含';
                     }
                 },
                 {
