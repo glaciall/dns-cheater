@@ -193,6 +193,7 @@ public class RuleController extends BaseController
             RuleManager.getInstance().remove(entity);
 
             Rule rule = new Rule();
+            rule.setId(ruleId);
 
             if (!StringUtils.isEmpty(ipFrom))
             {
