@@ -81,8 +81,8 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
             }
             param = $.extend({
                 form : null,
-                pageNo : 1,
-                pageNoName : 'pageNo',
+                pageIndex : 1,
+                pageIndexName : 'pageIndex',
                 pagination : $('.pagination'),
                 loading : '<div class="text-center"><img vspace="50" hspace="10" src="${web_resource}/proton/img/loading.gif" />正在载入，请稍候...</div>',
             }, param);
@@ -100,7 +100,7 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
             var urlParameters = param.form;
             if (param.form && param.form.serialize) urlParameters = param.form.serialize();
             else urlParameters = '';
-            urlParameters = concatParam(urlParameters, param.pageNoName + '=' + param.pageNo);
+            urlParameters = concatParam(urlParameters, param.pageIndexName + '=' + param.pageIndex);
 
             if (param.loading) container.html(param.loading);
             if (param.pagination && param.pagination.html) param.pagination.html('');
@@ -160,12 +160,12 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
                 container.html(shtml);
 
                 // 生成分页
-                shtml = '<li><a href="javascript:;" x-page="' + Math.max(1, result.data.pageNo - 1) + '">&lt;</a></li>';
-                for (var i = Math.max(1, result.data.pageNo - 5), k = 0; i <= Math.min(result.data.pageNo + 5, result.data.pa); i++)
+                shtml = '<li><a href="javascript:;" x-page="' + Math.max(1, result.data.pageIndex - 1) + '">&lt;</a></li>';
+                for (var i = Math.max(1, result.data.pageIndex - 5), k = 0; i <= Math.min(result.data.pageIndex + 5, result.data.pageCount); i++)
                 {
-                    shtml += '<li class="' + (i == result.data.pageNo ? 'active' : '') + '"><a x-page="' + i + '" href="javascript:;">' + i + '</a></li>';
+                    shtml += '<li class="' + (i == result.data.pageIndex ? 'active' : '') + '"><a x-page="' + i + '" href="javascript:;">' + i + '</a></li>';
                 }
-                shtml += '<li><a href="javascript:;" x-page="' + Math.min(result.data.pageNo + 1, result.data.pa) + '">&gt;</a></li>';
+                shtml += '<li><a href="javascript:;" x-page="' + Math.min(result.data.pageIndex + 1, result.data.pageCount) + '">&gt;</a></li>';
                 param.pagination.html(shtml);
 
                 if (param.load) param.load();
@@ -176,7 +176,7 @@ window.jQuery || document.write("<script src='${web_resource}/proton/js/jquery-1
                     {
                         $(this).click(function()
                         {
-                            paginate.parameters.pageNo = $(this).attr('x-page');
+                            paginate.parameters.pageIndex = $(this).attr('x-page');
                             container.paginate(paginate.parameters);
                         });
                     });

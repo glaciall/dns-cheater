@@ -105,6 +105,7 @@ public class UserService
         UserExample.Criteria criteria = UserExample.newAndCreateCriteria();
         if (!StringUtils.isEmpty(name)) criteria.andNameLike(name);
         criteria.example().setOrderByClause(User.Column.id.desc());
+        criteria.example().setPageInfo(pageIndex, pageSize);
         page.setList(userMapper.selectByExample(criteria.example()));
         page.setRecordCount(userMapper.countByExample(criteria.example()));
 

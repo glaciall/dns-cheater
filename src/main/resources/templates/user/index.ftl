@@ -35,6 +35,7 @@
                         </div>
                         <div class="panel-body">
                             <div id="user-table"></div>
+                            <ul class="pagination"></ul>
                         </div>
                     </div>
                 </div>

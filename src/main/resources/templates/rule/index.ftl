@@ -12,7 +12,7 @@
             padding-left: 10px;
             margin-right: 4px;
         }
-        .alert { margin-bottom: 0px !important; }
+        .alert-warning { margin-bottom: 0px !important; }
         .alert ol { margin-bottom: 0px !important; }
     </style>
 </head>
@@ -51,6 +51,7 @@
                         </div>
                         <div class="panel-body">
                             <div id="rule-table"></div>
+                            <ul class="pagination"></ul>
                         </div>
                     </div>
                 </div>
@@ -165,10 +166,6 @@
                     title : '#',
                     name : 'id',
                     align : 'center',
-                    formatter : function(i, v, r)
-                    {
-                        return i + 1;
-                    }
                 },
                 {
                     title : 'IP地址段',

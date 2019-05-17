@@ -49,6 +49,7 @@ public class RuleService
         Page<Rule> page = new Page<Rule>(pageIndex, pageSize);
         RuleExample.Criteria criteria = new RuleExample().createCriteria();
         criteria.example().setOrderByClause(Rule.Column.id.desc());
+        criteria.example().setPageInfo(pageIndex, pageSize);
         page.setList(ruleMapper.selectByExample(criteria.example()));
         page.setRecordCount(ruleMapper.countByExample(criteria.example()));
         return page;

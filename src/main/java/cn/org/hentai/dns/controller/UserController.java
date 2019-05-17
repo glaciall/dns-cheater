@@ -103,7 +103,7 @@ public class UserController extends BaseController
         Result result = new Result();
         try
         {
-            Page<User> users = userService.find(null, pageIndex, 20);
+            Page<User> users = userService.find(null, pageIndex, 5);
             for (User user : users.getList())
             {
                 user.secure();
