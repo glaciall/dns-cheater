@@ -11,6 +11,7 @@ import cn.org.hentai.dns.util.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.Inet6Address;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -82,6 +83,8 @@ public class RecursiveResolveWorker extends Thread
             return;
         }
 
+        ByteUtils.dump(packet.getBytes());
+
         List<ResourceRecord> records = new ArrayList();
         CacheManager cacheManager = CacheManager.getInstance();
         long minTTL = Integer.MAX_VALUE;
@@ -91,7 +94,7 @@ public class RecursiveResolveWorker extends Thread
             short type = packet.nextShort();
             // 如果应答的不是IPv4地址，则略过应答内容区
             // TYPE_AAAA应当留下来的，不过现在未普及，我也没用过就先算了
-            if (type != Message.TYPE_A)
+            if (type != Message.TYPE_A && type != Message.TYPE_AAAA)
             {
                 packet.skip(packet.skip(6).nextShort());
                 continue;
@@ -100,11 +103,20 @@ public class RecursiveResolveWorker extends Thread
             packet.skip(2);
             int ttl = packet.nextInt();
             int dlen = packet.nextShort() & 0xffff;
-            if (dlen != 4) throw new RuntimeException("invalid answer dlen");
-            long answerIP = packet.nextInt() & 0xffffffffL;
+            if (dlen == 4)
+            {
+                long answerIP = packet.nextInt() & 0xffffffffL;
 
-            minTTL = Math.min(ttl, minTTL);
-            records.add(new ResourceRecord(question.name, Message.TYPE_A, ttl, answerIP));
+                minTTL = Math.min(ttl, minTTL);
+                records.add(new ResourceRecord(question.name, Message.TYPE_A, ttl, answerIP));
+            }
+            else if (dlen == 16)
+            {
+                byte[] addr = packet.nextBytes(16);
+                minTTL = Math.min(ttl, minTTL);
+                System.err.println("IPv6: " + ByteUtils.toString(addr));
+                records.add(new ResourceRecord(question.name, Message.TYPE_AAAA, ttl, (Inet6Address) Inet6Address.getByAddress(addr)));
+            }
         }
         if (records.size() > 0) cacheManager.put(question.name, records.toArray(new ResourceRecord[0]), System.currentTimeMillis() + minTTL * 1000);
 
