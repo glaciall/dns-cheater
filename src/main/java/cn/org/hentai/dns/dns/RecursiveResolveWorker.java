@@ -83,8 +83,6 @@ public class RecursiveResolveWorker extends Thread
             return;
         }
 
-        ByteUtils.dump(packet.getBytes());
-
         List<ResourceRecord> records = new ArrayList();
         CacheManager cacheManager = CacheManager.getInstance();
         long minTTL = Integer.MAX_VALUE;
@@ -114,7 +112,6 @@ public class RecursiveResolveWorker extends Thread
             {
                 byte[] addr = packet.nextBytes(16);
                 minTTL = Math.min(ttl, minTTL);
-                System.err.println("IPv6: " + ByteUtils.toString(addr));
                 records.add(new ResourceRecord(question.name, Message.TYPE_AAAA, ttl, (Inet6Address) Inet6Address.getByAddress(addr)));
             }
         }
