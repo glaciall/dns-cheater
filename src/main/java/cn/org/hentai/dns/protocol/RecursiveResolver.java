@@ -1,9 +1,7 @@
-package cn.org.hentai.dns.dns;
+package cn.org.hentai.dns.protocol;
 
-import cn.org.hentai.dns.dns.coder.SimpleMessageEncoder;
-import cn.org.hentai.dns.dns.entity.Request;
-import cn.org.hentai.dns.dns.entity.Response;
-import cn.org.hentai.dns.stat.StatManager;
+import cn.org.hentai.dns.protocol.entity.Request;
+import cn.org.hentai.dns.protocol.entity.Response;
 import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.Configs;
 import cn.org.hentai.dns.util.Packet;
@@ -20,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by matrixy on 2019/4/19.

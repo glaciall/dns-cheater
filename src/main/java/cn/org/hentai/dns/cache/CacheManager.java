@@ -1,7 +1,7 @@
 package cn.org.hentai.dns.cache;
 
-import cn.org.hentai.dns.dns.entity.CachedItem;
-import cn.org.hentai.dns.dns.entity.ResourceRecord;
+import cn.org.hentai.dns.protocol.entity.CachedItem;
+import cn.org.hentai.dns.protocol.entity.ResourceRecord;
 
 /**
  * Created by matrixy on 2019/4/23.

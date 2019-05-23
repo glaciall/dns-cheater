@@ -1,6 +1,4 @@
-package cn.org.hentai.dns.dns.entity;
-
-import cn.org.hentai.dns.util.Packet;
+package cn.org.hentai.dns.protocol.entity;
 
 import java.net.SocketAddress;
 

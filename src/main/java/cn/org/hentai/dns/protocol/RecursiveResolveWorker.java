@@ -1,21 +1,17 @@
-package cn.org.hentai.dns.dns;
+package cn.org.hentai.dns.protocol;
 
 import cn.org.hentai.dns.cache.CacheManager;
-import cn.org.hentai.dns.dns.coder.SimpleMessageDecoder;
-import cn.org.hentai.dns.dns.coder.SimpleMessageEncoder;
-import cn.org.hentai.dns.dns.entity.*;
-import cn.org.hentai.dns.entity.Address;
+import cn.org.hentai.dns.protocol.coder.SimpleMessageDecoder;
+import cn.org.hentai.dns.protocol.coder.SimpleMessageEncoder;
+import cn.org.hentai.dns.protocol.entity.*;
 import cn.org.hentai.dns.util.ByteUtils;
-import cn.org.hentai.dns.util.IPUtils;
 import cn.org.hentai.dns.util.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.Inet6Address;
-import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

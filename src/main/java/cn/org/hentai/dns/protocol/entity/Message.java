@@ -1,6 +1,4 @@
-package cn.org.hentai.dns.dns.entity;
-
-import java.net.InetSocketAddress;
+package cn.org.hentai.dns.protocol.entity;
 
 /**
  * Created by matrixy on 2019/4/19.

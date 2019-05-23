@@ -1,11 +1,11 @@
-package cn.org.hentai.dns.dns.coder;
+package cn.org.hentai.dns.protocol.coder;
 
-import cn.org.hentai.dns.dns.entity.Message;
-import cn.org.hentai.dns.dns.entity.Question;
-import cn.org.hentai.dns.dns.entity.ResourceRecord;
+import cn.org.hentai.dns.protocol.entity.Message;
+import cn.org.hentai.dns.protocol.entity.Question;
+import cn.org.hentai.dns.protocol.entity.ResourceRecord;
 import cn.org.hentai.dns.util.Packet;
-import static cn.org.hentai.dns.dns.entity.Message.TYPE_A;
-import static cn.org.hentai.dns.dns.entity.Message.TYPE_AAAA;
+import static cn.org.hentai.dns.protocol.entity.Message.TYPE_A;
+import static cn.org.hentai.dns.protocol.entity.Message.TYPE_AAAA;
 
 /**
  * Created by matrixy on 2019/4/23.

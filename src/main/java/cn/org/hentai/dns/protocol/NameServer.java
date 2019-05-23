@@ -1,16 +1,13 @@
-package cn.org.hentai.dns.dns;
+package cn.org.hentai.dns.protocol;
 
-import cn.org.hentai.dns.dns.entity.Request;
-import cn.org.hentai.dns.dns.entity.Response;
+import cn.org.hentai.dns.protocol.entity.Request;
+import cn.org.hentai.dns.protocol.entity.Response;
 import cn.org.hentai.dns.stat.StatManager;
-import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.Configs;
 import cn.org.hentai.dns.util.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.nio.ByteBuffer;
@@ -19,8 +16,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by matrixy on 2019/4/19.

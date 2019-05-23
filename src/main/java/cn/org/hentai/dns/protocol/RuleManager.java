@@ -1,4 +1,4 @@
-package cn.org.hentai.dns.dns;
+package cn.org.hentai.dns.protocol;
 
 import cn.org.hentai.dns.entity.Address;
 import cn.org.hentai.dns.entity.Rule;

@@ -1,7 +1,6 @@
-package cn.org.hentai.dns.dns.coder;
+package cn.org.hentai.dns.protocol.coder;
 
-import cn.org.hentai.dns.dns.entity.Message;
-import cn.org.hentai.dns.util.ByteUtils;
+import cn.org.hentai.dns.protocol.entity.Message;
 import cn.org.hentai.dns.util.Packet;
 
 /**

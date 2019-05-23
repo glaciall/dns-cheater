@@ -1,6 +1,6 @@
 package cn.org.hentai.dns.controller;
 
-import cn.org.hentai.dns.dns.RuleManager;
+import cn.org.hentai.dns.protocol.RuleManager;
 import cn.org.hentai.dns.entity.Address;
 import cn.org.hentai.dns.entity.Result;
 import cn.org.hentai.dns.entity.Rule;
