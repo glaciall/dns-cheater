@@ -72,7 +72,7 @@ public class UserController extends BaseController
             if (StringUtils.isEmpty(password)) throw new RuntimeException("请输入新的登陆密码");
             if (!password.equals(password2)) throw new RuntimeException("两次输入的新密码不一致");
 
-            if (password.length() < 6 || password.length() > 16) throw new RuntimeException("新的密码应该在6~16个字符");
+            if (password.length() < 6 || password.length() > 32) throw new RuntimeException("新的密码应该在6~32个字符");
 
             User user = this.getLoginUser();
             if (userService.checkPassword(user, oldPwd) == false)
@@ -130,7 +130,7 @@ public class UserController extends BaseController
             if (StringUtils.isEmpty(name)) throw new RuntimeException("请输入账号名称");
             if (name.length() < 4 || name.length() > 20) throw new RuntimeException("账号名称必须是4~20个字符之间");
             if (StringUtils.isEmpty(password)) throw new RuntimeException("请输入账号密码");
-            if (password.length() < 6 || password.length() > 16) throw new RuntimeException("登陆密码必须是6~16个字符之间");
+            if (password.length() < 6 || password.length() > 32) throw new RuntimeException("登陆密码必须是6~32个字符之间");
             if (!password.equals(password2)) throw new RuntimeException("两次输入的密码不一致");
 
             userService.register(name, password);
