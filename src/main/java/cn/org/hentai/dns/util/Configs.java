@@ -1,5 +1,8 @@
 package cn.org.hentai.dns.util;
 
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,34 +13,23 @@ import java.util.Properties;
  */
 public final class Configs
 {
-    static Properties properties = new Properties();
+    static Environment env;
 
-    public static void init(String configFilePath)
+    public static void init(ApplicationContext context)
     {
-        try
-        {
-            File file = new File((configFilePath.startsWith("/") ? "." : "") + configFilePath);
-            if (file.exists()) properties.load(new FileInputStream(file));
-            else properties.load(Configs.class.getResourceAsStream(configFilePath));
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        env = context.getEnvironment();
     }
 
     public static String get(String key)
     {
-        Object val = properties.get(key);
+        Object val = env.getProperty(key);
         if (null == val) return null;
         else return String.valueOf(val).trim();
     }
 
     public static String get(String key, String defaultVal)
     {
-        Object val = properties.get(key);
-        if (null == val) return defaultVal;
-        else return String.valueOf(val).trim();
+        return env.getProperty(key, defaultVal);
     }
 
     public static int getInt(String key, int defaultVal)
