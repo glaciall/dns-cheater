@@ -58,7 +58,6 @@ public class RecursiveResolver extends Thread
 
             datagramChannel = DatagramChannel.open();
             datagramChannel.configureBlocking(false);
-            datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
             new Sender(this, datagramChannel, upstreamNameServer).start();
 
@@ -67,7 +66,7 @@ public class RecursiveResolver extends Thread
             datagramChannel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
 
-            datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            datagramChannel.register(selector, SelectionKey.OP_READ);
             while (!this.isInterrupted())
             {
                 selector.select();

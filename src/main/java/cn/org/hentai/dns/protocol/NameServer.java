@@ -55,7 +55,6 @@ public class NameServer extends Thread
             datagramChannel = DatagramChannel.open();
             datagramChannel.socket().bind(new InetSocketAddress(port));
             datagramChannel.configureBlocking(false);
-            datagramChannel.register(selector, SelectionKey.OP_READ);
 
             new Sender(this, datagramChannel).start();
 
