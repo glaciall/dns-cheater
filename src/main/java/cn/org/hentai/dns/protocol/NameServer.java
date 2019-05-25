@@ -57,12 +57,14 @@ public class NameServer extends Thread
             datagramChannel.configureBlocking(false);
             datagramChannel.register(selector, SelectionKey.OP_READ);
 
+            new Sender(this, datagramChannel).start();
+
             logger.info("NameServer started at: {}", port);
 
             datagramChannel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
 
-            datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+            datagramChannel.register(selector, SelectionKey.OP_READ);
             while (!this.isInterrupted())
             {
                 selector.select();
@@ -81,25 +83,6 @@ public class NameServer extends Thread
                         logger.info("##############################################################################################");
                         logger.info("received: from = {}, length = {}, ", addr.toString(), message.length);
                         queries.put(new Request(addr, Packet.create(message)));
-                    }
-                    while (selectionKey.isWritable())
-                    {
-                        if (responses.size() == 0)
-                        {
-                            if (selectionKey.isReadable() == false) Thread.sleep(1);
-                            break;
-                        }
-                        Response response = responses.poll();
-                        if (response != null)
-                        {
-                            statMgr.addAnswerCount();
-
-                            buffer.clear();
-                            buffer.put(response.packet);
-                            buffer.flip();
-                            datagramChannel.send(buffer, response.remoteAddress);
-                            logger.info("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
-                        }
                     }
                 }
             }
@@ -138,6 +121,50 @@ public class NameServer extends Thread
         catch (InterruptedException e)
         {
             return false;
+        }
+    }
+
+    public Response takeResponse() throws InterruptedException
+    {
+        return responses.take();
+    }
+
+    // 使用独立的线籔程去发送回应
+    static class Sender extends Thread
+    {
+        NameServer nameServer;
+        DatagramChannel datagramChannel;
+
+        public Sender(NameServer nameServer, DatagramChannel datagramChannel)
+        {
+            this.nameServer = nameServer;
+            this.datagramChannel = datagramChannel;
+
+            this.setName("name-server-sender");
+        }
+
+        public void run()
+        {
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            StatManager statMgr = StatManager.getInstance();
+            while (!this.isInterrupted())
+            {
+                try
+                {
+                    Response response = nameServer.takeResponse();
+                    statMgr.addAnswerCount();
+                    buffer.clear();
+                    buffer.put(response.packet);
+                    buffer.flip();
+                    datagramChannel.send(buffer, response.remoteAddress);
+                    logger.info("send: to = {}, length = {}", response.remoteAddress, response.packet.length);
+                }
+                catch(Exception e)
+                {
+                    if (e instanceof InterruptedException) break;
+                    logger.error("send error", e);
+                }
+            }
         }
     }
 

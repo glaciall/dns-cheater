@@ -2,6 +2,7 @@ package cn.org.hentai.dns.protocol;
 
 import cn.org.hentai.dns.protocol.entity.Request;
 import cn.org.hentai.dns.protocol.entity.Response;
+import cn.org.hentai.dns.stat.StatManager;
 import cn.org.hentai.dns.util.ByteUtils;
 import cn.org.hentai.dns.util.Configs;
 import cn.org.hentai.dns.util.Packet;
@@ -27,11 +28,8 @@ public class RecursiveResolver extends Thread
     static Logger logger = LoggerFactory.getLogger(RecursiveResolver.class);
     ArrayBlockingQueue<Request> queries = null;
     ArrayBlockingQueue<Response> responses = null;
-    Map<Short, OriginalRequest> transactionMap = null;
-
     RecursiveResolveWorker[] resolveWorkers = null;
-
-    short sequence = 1;
+    Map<Short, OriginalRequest> transactionMap = null;
 
     public RecursiveResolver()
     {
@@ -54,18 +52,20 @@ public class RecursiveResolver extends Thread
         DatagramChannel datagramChannel = null;
         try
         {
+            InetSocketAddress upstreamNameServer = new InetSocketAddress(Configs.get("dns.upstream.server.address"), Configs.getInt("dns.upstream.server.port", 53));
+
             Selector selector = Selector.open();
 
             datagramChannel = DatagramChannel.open();
             datagramChannel.configureBlocking(false);
             datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 
+            new Sender(this, datagramChannel, upstreamNameServer).start();
+
             logger.info("Recursive Resolver started...");
 
             datagramChannel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
-
-            InetSocketAddress upstreamNameServer = new InetSocketAddress(Configs.get("dns.upstream.server.address"), Configs.getInt("dns.upstream.server.port", 53));
 
             datagramChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
             while (!this.isInterrupted())
@@ -86,31 +86,9 @@ public class RecursiveResolver extends Thread
                         logger.info("##############################################################################################");
                         logger.info("answer received: from = {}, length = {}, ", addr.toString(), message.length);
                         short seq = 0;
-                        OriginalRequest req = transactionMap.remove(seq = (short)ByteUtils.getShort(message, 0, 2));
+                        OriginalRequest req = takeUpstreamRequest(seq = (short)ByteUtils.getShort(message, 0, 2));
                         if (req != null) responses.add(new Response(req.sequence, req.remoteAddress, message));
                         else logger.info("no original request found for: " + seq);
-                    }
-                    while (selectionKey.isWritable())
-                    {
-                        if (queries.size() == 0)
-                        {
-                            if (selectionKey.isReadable() == false) Thread.sleep(1);
-                            break;
-                        }
-                        Request request = queries.poll();
-                        if (request != null)
-                        {
-                            Packet packet = request.packet;
-                            short seq = sequence++;
-                            request.sequence = seq;
-                            transactionMap.put(seq, new OriginalRequest(packet.seek(0).nextShort(), request.remoteAddress));
-                            packet.seek(0).setShort(seq);
-                            buffer.clear();
-                            buffer.put(packet.getBytes());
-                            buffer.flip();
-                            datagramChannel.send(buffer, upstreamNameServer);
-                            logger.info("send request to upstream: to = {}, sequence = {}, length = {}", upstreamNameServer, seq, packet.size());
-                        }
                     }
                 }
             }
@@ -139,6 +117,11 @@ public class RecursiveResolver extends Thread
         }
     }
 
+    public Request takeRequest() throws InterruptedException
+    {
+        return queries.take();
+    }
+
     public Response takeResponse()
     {
         try
@@ -161,6 +144,63 @@ public class RecursiveResolver extends Thread
             this.sequence = seq;
             this.remoteAddress = addr;
         }
+    }
+
+    // 使用独立的线籔程去发送回应
+    static class Sender extends Thread
+    {
+        RecursiveResolver recursiveResolver;
+        DatagramChannel datagramChannel;
+        SocketAddress upstreamNameServer;
+
+        public Sender(RecursiveResolver recursiveResolver, DatagramChannel datagramChannel, SocketAddress upstreamNameServer)
+        {
+            this.recursiveResolver = recursiveResolver;
+            this.datagramChannel = datagramChannel;
+            this.upstreamNameServer = upstreamNameServer;
+
+            this.setName("recursive-resolver-sender");
+        }
+
+        public void run()
+        {
+            short sequence = 1;
+            ByteBuffer buffer = ByteBuffer.allocate(1024);
+            StatManager statMgr = StatManager.getInstance();
+            while (!this.isInterrupted())
+            {
+                try
+                {
+                    Request request = recursiveResolver.takeRequest();
+
+                    Packet packet = request.packet;
+                    short seq = sequence++;
+                    request.sequence = seq;
+                    recursiveResolver.saveUpstreamRequest(seq, new OriginalRequest(packet.seek(0).nextShort(), request.remoteAddress));
+                    packet.seek(0).setShort(seq);
+                    buffer.clear();
+                    buffer.put(packet.getBytes());
+                    buffer.flip();
+                    datagramChannel.send(buffer, upstreamNameServer);
+                    logger.info("send request to upstream: to = {}, sequence = {}, length = {}", upstreamNameServer, seq & 0xffff, packet.size());
+                }
+                catch(Exception e)
+                {
+                    if (e instanceof InterruptedException) break;
+                    logger.error("send error", e);
+                }
+            }
+        }
+    }
+
+    protected void saveUpstreamRequest(short sequence, OriginalRequest request)
+    {
+        transactionMap.put(sequence, request);
+    }
+
+    protected OriginalRequest takeUpstreamRequest(short sequence)
+    {
+        return transactionMap.remove(sequence);
     }
 
     static RecursiveResolver instance = null;
