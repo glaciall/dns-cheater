@@ -49,16 +49,17 @@ public class NameServer extends Thread
         {
             StatManager statMgr = StatManager.getInstance();
 
+            String bindIP = Configs.get("dns.server.addr", "0.0.0.0");
             int port = Configs.getInt("dns.server.port", 53);
             Selector selector = Selector.open();
 
             datagramChannel = DatagramChannel.open();
-            datagramChannel.socket().bind(new InetSocketAddress(port));
+            datagramChannel.socket().bind(new InetSocketAddress(bindIP, port));
             datagramChannel.configureBlocking(false);
 
             new Sender(this, datagramChannel).start();
 
-            logger.info("NameServer started at: {}", port);
+            logger.info("NameServer started at {}:{}", bindIP, port);
 
             datagramChannel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1024);
