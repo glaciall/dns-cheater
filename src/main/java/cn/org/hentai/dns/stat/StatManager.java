@@ -1,6 +1,7 @@
 package cn.org.hentai.dns.stat;
 
 import cn.org.hentai.dns.util.Configs;
+import cn.org.hentai.dns.util.Conversion;
 import cn.org.hentai.dns.util.Packet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,9 @@ public final class StatManager
 
     private StatManager()
     {
-        logs = Packet.create(1024 * 1024 * 200);
+        String lmem = Configs.get("dns.stat-logger.memory");
+        int i = Conversion.toByte(lmem);
+        logs = Packet.create(i);
         domainNameMap = new HashMap();
         sequence = 1;
 
